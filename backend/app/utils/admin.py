@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Admin
+from app.models import Admin, User
 from .password import hash_password, verify_password
 
 def create_default_admin(db: Session):
@@ -33,3 +33,11 @@ def get_current_admin(email: str, password: str, db: Session = Depends(get_db)):
         )
 
     return admin
+
+def check_admin(email: str, password: str, db: Session):
+    admin = db.query(Admin).filter(Admin.email == email).first()
+
+    if admin and verify_password(password, admin.hashed_password):
+        return True
+
+    return False

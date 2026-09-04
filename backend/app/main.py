@@ -8,6 +8,7 @@ from app.database import Base, SessionLocal, engine
 # Даш, импорты роутеров сюда / харашо
 from app.routers.categories import router as categories_router
 from app.routers.users import router as users_router
+from app.routers.products import router as products_router
 
 Base.metadata.create_all(
     bind=engine
@@ -36,6 +37,7 @@ app.add_middleware(
 # и тут роутеры подключаем
 app.include_router(categories_router)
 app.include_router(users_router)
+app.include_router(products_router)
 
 # для аватарок
 app.mount("/avatars", StaticFiles(directory="avatars"), name="avatars")

@@ -57,6 +57,16 @@ class ProductCreate(BaseModel):
     seller_id: int
     category_id: int
 
+class ProductUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    cost: int | None = None
+    amount: int | None = None
+    in_stock: bool | bool = True
+    photo: str | None = None
+    created_at: datetime | None = None
+    category_id: int | None = None
+
 class ProductResponse(BaseModel):
     id: int
     name: str

@@ -22,3 +22,11 @@ def get_current_user(email: str, password: str, db: Session = Depends(get_db)):
         )
 
     return user
+
+def check_user(email: str, password: str, db: Session):
+    user = db.query(User).filter(User.email == email).first()
+
+    if user and verify_password(password, user.hashed_password):
+        return True
+
+    return False

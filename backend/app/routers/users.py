@@ -65,13 +65,15 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 # обновляем инфу о пользователе
 @router.put('/{user_id}', response_model=UserResponse)
 def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    if current_user.id != user_id:
-        raise HTTPException(status_code=403, detail='You can only update your own profile')
-
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail='User not found')
 
+
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail='You can only update your own profile')
+
+   
     email_check = db.query(User).filter(User.email == user_in.email, User.id != user_id).first()
     if email_check:
         raise HTTPException(status_code=400, detail='Email already in use')
