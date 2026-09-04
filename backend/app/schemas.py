@@ -7,9 +7,19 @@ class UserCreate(BaseModel):
     hashed_password: str
     email: str
     phone: str | None = None
-    avatar: str | None = None
     country: str | None = None
     city: str | None = None
+
+
+class UserUpdate(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
+    hashed_password: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    country: str | None = None
+    city: str | None = None
+
 
 class UserResponse(BaseModel):
     id: int
@@ -22,7 +32,19 @@ class UserResponse(BaseModel):
     city: str | None = None
 
     class Config:
-       from_attributes = True
+        from_attributes = True
+
+
+class AdminCreate(BaseModel):
+    email: str
+    hashed_password: str
+
+class AdminResponse(BaseModel):
+    id: int
+    email: str
+
+    class Config:
+        from_attributes = True
 
 class ProductCreate(BaseModel):
     name: str
@@ -52,6 +74,10 @@ class ProductResponse(BaseModel):
 
 class CategoryCreate(BaseModel):
     name: str
+    description: str | None = None
+
+class CategoryUpdate(BaseModel):
+    name: str | None = None
     description: str | None = None
 
 class CategoryResponse(BaseModel):

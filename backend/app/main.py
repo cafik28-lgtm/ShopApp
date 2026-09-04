@@ -1,11 +1,24 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from app.database import Base, engine
+from app.utils.admin import create_default_admin
+
+from app.database import Base, SessionLocal, engine
+# Даш, импорты роутеров сюда / харашо
+from app.routers.categories import router as categories_router
+from app.routers.users import router as users_router
 
 Base.metadata.create_all(
     bind=engine
 )
+
+db = SessionLocal()
+
+try:
+    create_default_admin(db)
+finally:
+    db.close()
 
 app = FastAPI(
     title='Shop Online',
@@ -20,6 +33,12 @@ app.add_middleware(
     allow_headers=['*']
 )
 
+# и тут роутеры подключаем
+app.include_router(categories_router)
+app.include_router(users_router)
+
+# для аватарок
+app.mount("/avatars", StaticFiles(directory="avatars"), name="avatars")
 
 @app.get('/')
 def root():

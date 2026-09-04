@@ -1,0 +1,24 @@
+from fastapi import Depends, HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.models import User
+from .password import verify_password
+
+def get_current_user(email: str, password: str, db: Session = Depends(get_db)):
+    print("CURRENT USER EMAIL:", email)
+    user = db.query(User).filter(User.email == email).first()
+
+    if not user:
+        raise HTTPException(
+            status_code=403,
+            detail="User access required"
+        )
+
+    if not verify_password(password, user.hashed_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+
+    return user

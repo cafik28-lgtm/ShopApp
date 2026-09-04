@@ -15,6 +15,13 @@ class User(Base):
     country = Column(String, nullable=True)
     city = Column(String, nullable=True)
 
+class Admin(Base):
+    __tablename__ = "admins"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+
 class Product(Base):
     __tablename__ = "products"
 

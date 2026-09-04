@@ -4,3 +4,5 @@ sqlalchemy
 pydantic
 web3
 python-dotenv
+python-multipart
+bcrypt
