@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from app.models import Product
 
 class UserCreate(BaseModel):
     first_name: str
@@ -98,38 +99,6 @@ class CategoryResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class MessageCreate(BaseModel):
-    sender_id: int
-    chat_id: int
-    created_at: datetime
-    is_read: bool = False
-    text: str
-
-class MessageResponse(BaseModel):
-    id: int
-    sender_id: int
-    chat_id: int
-    created_at: datetime
-    is_read: bool = False
-    text: str
-
-    class Config:
-        from_attributes = True
-
-class ChatCreate(BaseModel):
-    customer_id: int
-    seller_id: int
-    created_at: datetime
-
-class ChatResponse(BaseModel):
-    id: int
-    customer_id: int
-    seller_id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
 class SellerFeedbackCreate(BaseModel):
     seller_id: int
     customer_id: int
@@ -167,10 +136,10 @@ class ProductFeedbackResponse(BaseModel):
         from_attributes = True
 
 class OrderItemCreate(BaseModel):
-    order_id: int
-    product_id: int
     amount: int
-    cost: int
+
+class OrderItemUpdate(BaseModel):
+    amount: int
 
 class OrderItemResponse(BaseModel):
     id: int
@@ -186,8 +155,8 @@ class OrderCreate(BaseModel):
     customer_id: int
     total_cost: int
     created_at: datetime
-    status: str = "pending"
-    delivery_address: str
+    status: str = "cart"
+    delivery_address: str | None = None
     is_delivered: bool = False
 
 class OrderResponse(BaseModel):
@@ -195,12 +164,17 @@ class OrderResponse(BaseModel):
     customer_id: int
     total_cost: int
     created_at: datetime
-    status: str = "pending"
-    delivery_address: str
+    status: str
+    delivery_address: str | None = None
     is_delivered: bool = False
 
     class Config:
         from_attributes = True
+
+class OrderUpdate(BaseModel):
+    status: str | None = None
+    delivery_address: str | None = None
+    is_delivered: bool | None = None
 
 class FavoriteCreate(BaseModel):
     user_id: int

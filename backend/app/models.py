@@ -43,24 +43,6 @@ class Category(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     description = Column(String, nullable=True)
 
-class Message(Base):
-    __tablename__ = "messages"
-
-    id = Column(Integer, primary_key=True, index=True)
-    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    is_read = Column(Boolean, default=False)
-    text = Column(String, nullable=False)
-
-class Chat(Base):
-    __tablename__ = "chats"
-
-    id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
 class SellerFeedback(Base):
     __tablename__ = "seller_feedbacks"
 
@@ -97,9 +79,10 @@ class Order(Base):
     customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     total_cost = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    status = Column(String, default="pending")  # pending, shipped, delivered, canceled
-    delivery_address = Column(String, nullable=False)
+    status = Column(String, default="cart")  # cart, pending, shipped, delivered, canceled
+    delivery_address = Column(String, nullable=True)
     is_delivered = Column(Boolean, default=False)
+    is_paid = Column(Boolean, default=False)
 
 class Favorite(Base):
     __tablename__ = "favorites"
