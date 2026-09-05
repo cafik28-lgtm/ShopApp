@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from app.database import get_db
-from app.models import Order, User, Admin
-from app.schemas import OrderCreate, OrderResponse, OrderUpdate
+from app.models import Order, User, Admin, OrderItem, Product
+from app.schemas import OrderResponse
 from ..utils.user import get_current_user
 from ..utils.admin import get_current_admin
 
@@ -37,93 +36,85 @@ def get_orders(
 ):
     if isinstance(current_entity, Admin):
         return db.query(Order).all()
+
     return db.query(Order).filter(Order.customer_id == current_entity.id).all()
 
-# геттер конкретного заказа, если админ, то любой заказ, если юзер, то только его заказ
-@router.get("/{order_id}", response_model=OrderResponse)
-def get_order(
-    order_id: int, 
-    db: Session = Depends(get_db), 
-    current_entity = Depends(get_user_or_admin)
+@router.get('/orders', response_model=list[OrderResponse])
+def get_user_orders(
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+    return db.query(Order) \
+        .filter(Order.customer_id == current_user.id) \
+        .all()
+
+
+
+# # геттер конкретного заказа, если админ, то любой заказ, если юзер, то только его заказ
+# @router.get("/{order_id}", response_model=OrderResponse)
+# def get_order(
+#     order_id: int, 
+#     db: Session = Depends(get_db), 
+#     current_entity = Depends(get_user_or_admin)
+# ):
+#     order = db.query(Order).filter(Order.id == order_id).first()
+#     if not order:
+#         raise HTTPException(status_code=404, detail="Order not found")
         
-    if isinstance(current_entity, Admin) or order.customer_id == current_entity.id:
-        return order
+#     if isinstance(current_entity, Admin) or order.customer_id == current_entity.id:
+#         return order
         
-    raise HTTPException(status_code=403, detail="Not enough permissions")
+#     raise HTTPException(status_code=403, detail="Not enough permissions")
 
-# функция создания заказа, доступна только для юзеров
-@router.post("/", response_model=OrderResponse)
-def create_order(
-    order_data: OrderCreate, 
-    db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
-):
-    try:
-        new_order = Order(
-            customer_id=current_user.id,
-            total_cost=order_data.total_cost,
-            created_at=order_data.created_at,
-            status=order_data.status,
-            delivery_address=order_data.delivery_address,
-            is_delivered=order_data.is_delivered
-        )
-        db.add(new_order)
-        db.commit()
-        db.refresh(new_order)
-        return new_order
-    except Exception as err:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(err))
-
-# функция обновления заказа, доступна для админов и юзеров, но юзер может обновлять только свои заказы
-@router.put("/{order_id}", response_model=OrderResponse)
-def update_order(
-    order_id: int,
-    order_update: OrderUpdate,
-    db: Session = Depends(get_db),
-    current_entity = Depends(get_user_or_admin)
-):
-    order = db.query(Order).filter(Order.id == order_id).first()
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
-
-    if not isinstance(current_entity, Admin) and order.customer_id != current_entity.id:
-        raise HTTPException(status_code=403, detail="You can only update your own orders")
-
-    try:
-        if order_update.status is not None:
-            order.status = order_update.status
-        if order_update.delivery_address is not None:
-            order.delivery_address = order_update.delivery_address
-        if order_update.is_delivered is not None:
-            order.is_delivered = order_update.is_delivered
-
-        db.commit()
-        db.refresh(order)
-        return order
-    except Exception as err:
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(err))
-
-# функция удаления заказа, админ может удалить любой заказ, юзер может удалить только свои заказы
+# функция удаления заказа, юзер может удалить только свои заказы
 @router.delete("/{order_id}")
 def delete_order(
     order_id: int, 
     db: Session = Depends(get_db),
-    current_entity = Depends(get_user_or_admin)
+    current_user = Depends(get_current_user)
 ):
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+
+    if order.status != "cart" or order.is_paid == True :
+        raise HTTPException(
+            status_code=400,
+            detail="You can delete only unpaid cart"
+        )
+
         
-    if not isinstance(current_entity, Admin) and order.customer_id != current_entity.id:
-        raise HTTPException(status_code=403, detail="You can only delete your own orders")
+    db_user = db.query(User) \
+            .filter(User.id == order.customer_id) \
+            .first()
+
+    if not db_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    if db_user.id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="You can delete onlu your order"
+        )
 
     try:
+        orderItems = db.query(OrderItem) \
+                    .filter(OrderItem.order_id == order.id) \
+                    .all()
+        for o in orderItems:
+            db_product = db.query(Product) \
+                .filter(Product.id == o.product_id) \
+                .first()
+            
+            if db_product:
+                db_product.amount += o.amount
+                if db_product.amount > 0:
+                    db_product.in_stock = True
+            db.delete(o)
+
         db.delete(order)
         db.commit()
         return {"message": "Order deleted successfully"}

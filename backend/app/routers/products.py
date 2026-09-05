@@ -51,7 +51,7 @@ def create_product(
     ):
 
     db_user = db.query(User) \
-        .filter(User.id == product.seller_id) \
+        .filter(User.id == user_id) \
         .first()
 
     if not db_user:

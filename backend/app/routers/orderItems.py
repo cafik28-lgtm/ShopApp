@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Product, Order, OrderItem
 from app.schemas import OrderItemCreate, OrderItemResponse, OrderItemUpdate
 
-from app.models import User, Admin
+from app.models import User
 
 from ..utils.admin import check_admin
 from ..utils.user import get_current_user, check_user
@@ -16,6 +16,30 @@ router = APIRouter(
     prefix="/orderItems",
     tags=["OrderItems"]
 )
+
+@router.get('/cart/{ori_id}', response_model=OrderItemResponse)
+def get_cart_item(
+    ori_id: int,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    db_ori = db.query(OrderItem) \
+        .join(Order, Order.id == OrderItem.order_id) \
+        .filter(
+            OrderItem.id == ori_id,
+            Order.customer_id == current_user.id,
+            Order.status == "cart",
+            Order.is_paid == False
+        ) \
+        .first()
+
+    if not db_ori:
+        raise HTTPException(
+            status_code=404,
+            detail="Order Item not found in your unpaid cart"
+        )
+
+    return db_ori
 
 @router.post('/', response_model=OrderItemResponse)
 def create_ori(
@@ -63,7 +87,7 @@ def create_ori(
         )   
 
     db_order = db.query(Order) \
-            .filter(Order.customer_id == user_id, Order.status=="cart") \
+            .filter(Order.customer_id == user_id, Order.status=="cart", Order.is_paid == False) \
             .first()
 
     if not db_order:
@@ -96,6 +120,15 @@ def create_ori(
                 db_product.in_stock = False
 
             db.add(db_ori)
+            db.flush()
+
+            db_order.total_cost = sum(
+                item.cost
+                for item in db.query(OrderItem)
+                .filter(OrderItem.order_id == db_order.id)
+                .all()
+            )
+            
             db.commit()
             db.refresh(db_ori)
 
@@ -114,6 +147,15 @@ def create_ori(
             db_product.in_stock = False
 
         db.add(db_ori)
+        db.flush()
+
+        db_order.total_cost = sum(
+            item.cost
+            for item in db.query(OrderItem)
+            .filter(OrderItem.order_id == db_order.id)
+            .all()
+        )
+
         db.commit()
         db.refresh(db_ori)
 
@@ -196,6 +238,13 @@ def update_ori(
         db_ori.amount = ori.amount
         db_ori.cost = ori.amount * prod.cost
 
+        db_order.total_cost = sum(
+            item.cost
+            for item in db.query(OrderItem)
+            .filter(OrderItem.order_id == db_order.id)
+            .all()
+        )
+
         db.commit()
         db.refresh(db_ori)
 
@@ -254,6 +303,15 @@ def delete_ori(
             if db_product.amount > 0:
                 db_product.in_stock = True
         db.delete(db_ori)
+        db.flush()
+
+        db_order.total_cost = sum(
+            item.cost
+            for item in db.query(OrderItem)
+            .filter(OrderItem.order_id == db_order.id)
+            .all()
+        ) 
+
         db.commit()
 
         return {'message': 'Order Item deleted successfuly'}

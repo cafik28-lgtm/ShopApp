@@ -55,7 +55,6 @@ class ProductCreate(BaseModel):
     in_stock: bool = True
     photo: str | None = None
     created_at: datetime
-    seller_id: int
     category_id: int
 
 class ProductUpdate(BaseModel):
@@ -99,23 +98,6 @@ class CategoryResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class SellerFeedbackCreate(BaseModel):
-    seller_id: int
-    customer_id: int
-    feedback: str
-    rating: int
-    created_at: datetime
-
-class SellerFeedbackResponse(BaseModel):
-    id: int
-    seller_id: int
-    customer_id: int
-    feedback: str
-    rating: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class ProductFeedbackCreate(BaseModel):
     product_id: int

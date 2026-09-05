@@ -43,16 +43,6 @@ class Category(Base):
     name = Column(String, unique=True, index=True, nullable=False)
     description = Column(String, nullable=True)
 
-class SellerFeedback(Base):
-    __tablename__ = "seller_feedbacks"
-
-    id = Column(Integer, primary_key=True, index=True)
-    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    feedback = Column(String, nullable=False)
-    rating = Column(Integer, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
 class ProductFeedback(Base):
     __tablename__ = "product_feedbacks"
 
