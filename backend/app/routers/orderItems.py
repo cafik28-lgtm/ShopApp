@@ -7,8 +7,7 @@ from app.schemas import OrderItemCreate, OrderItemResponse, OrderItemUpdate
 
 from app.models import User
 
-from ..utils.admin import check_admin
-from ..utils.user import get_current_user, check_user
+from ..utils.user import get_current_user
 
 from datetime import datetime
 

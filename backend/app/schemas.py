@@ -158,10 +158,6 @@ class OrderUpdate(BaseModel):
     delivery_address: str | None = None
     is_delivered: bool | None = None
 
-class FavoriteCreate(BaseModel):
-    user_id: int
-    product_id: int
-
 class FavoriteResponse(BaseModel):
     id: int
     user_id: int
