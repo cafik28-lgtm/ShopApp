@@ -52,6 +52,8 @@ def create_favorite(
         db.add(db_favorite)
         db.commit()
         db.refresh(db_favorite)
+        return db_favorite
+    
     except Exception as err:
         db.rollback()
         raise HTTPException(

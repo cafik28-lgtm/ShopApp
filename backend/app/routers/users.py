@@ -1,5 +1,6 @@
 import os
 import shutil
+from django.contrib.gis import db
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -67,16 +68,22 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
-        raise HTTPException(status_code=404, detail='User not found')
-
+        raise HTTPException(status_code=404, detail='User not found')   
 
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail='You can only update your own profile')
 
-   
-    email_check = db.query(User).filter(User.email == user_in.email, User.id != user_id).first()
-    if email_check:
-        raise HTTPException(status_code=400, detail='Email already in use')
+    # Проверка уникальности почты (уже была)
+    if user_in.email is not None:
+        email_check = db.query(User).filter(User.email == user_in.email, User.id != user_id).first()
+        if email_check:
+            raise HTTPException(status_code=400, detail='Email already in use')
+
+    # Новая проверка уникальности телефона
+    if user_in.phone is not None:
+        phone_check = db.query(User).filter(User.phone == user_in.phone, User.id != user_id).first()
+        if phone_check:
+            raise HTTPException(status_code=400, detail='Phone already in use')
 
     try:
         if user_in.first_name is not None:
