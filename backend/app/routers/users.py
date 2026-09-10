@@ -1,12 +1,11 @@
 import os
 import shutil
-from django.contrib.gis import db
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import User
-from app.schemas import UserCreate, UserUpdate, UserResponse
+from app.schemas import UserCreate, UserUpdate, UserResponse, UserLogin
 from  ..utils.password import hash_password
 from  ..utils.admin import get_current_admin
 from  ..utils.user import get_current_user
@@ -18,6 +17,18 @@ router = APIRouter(
 
 AVATARS_DIR = 'avatars'
 os.makedirs(AVATARS_DIR, exist_ok=True)
+
+
+@router.post("/login")
+def login_admin(
+    data: UserLogin,
+    current_user = Depends(get_current_user)
+):
+    return {
+        "message": "User login successful",
+        "admin_id": current_user.id,
+        "email": current_user.email
+    }
 
 # получаем список всех пользователей
 @router.get('/', response_model=list[UserResponse])

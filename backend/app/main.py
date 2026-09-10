@@ -6,6 +6,8 @@ from app.utils.admin import create_default_admin
 
 from app.database import Base, SessionLocal, engine
 # Даш, импорты роутеров сюда / харашо
+from app.routers.admin import router as admin_router
+
 from app.routers.categories import router as categories_router
 from app.routers.users import router as users_router
 from app.routers.products import router as products_router
@@ -39,6 +41,8 @@ app.add_middleware(
 )
 
 # и тут роутеры подключаем
+app.include_router(admin_router)
+
 app.include_router(categories_router)
 app.include_router(users_router)
 app.include_router(products_router)

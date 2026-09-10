@@ -2,6 +2,14 @@ from pydantic import BaseModel
 from datetime import datetime
 from app.models import Product
 
+class AdminLogin(BaseModel):
+    email: str
+    password: str
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
 class UserCreate(BaseModel):
     first_name: str
     last_name: str

@@ -1,7 +1,13 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import Navbar from './components/NavBar.vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 </script>
 
 <template>
-  <HelloWorld />
+    <Navbar v-if="route.path !== '/login' 
+    && route.path !== '/user/register'" />
+
+    <router-view />
 </template>

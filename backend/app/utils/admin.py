@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Admin, User
 from .password import hash_password, verify_password
+from app.schemas import AdminLogin
 
 def create_default_admin(db: Session):
     admin = db.query(Admin).first()
@@ -17,8 +18,28 @@ def create_default_admin(db: Session):
         db.add(admin)
         db.commit()
 
-def get_current_admin(email: str, password: str, db: Session = Depends(get_db)):
-    admin = db.query(Admin).filter(Admin.email == email).first()
+# def get_current_admin(email: str, password: str, db: Session = Depends(get_db)):
+#     admin = db.query(Admin).filter(Admin.email == email).first()
+
+#     if not admin:
+#         raise HTTPException(
+#             status_code=403,
+#             detail="Admin access required"
+#         )
+
+#     if not verify_password(password, admin.hashed_password):
+#         raise HTTPException(
+#             status_code=401,
+#             detail="Invalid email or password"
+#         )
+
+#     return admin
+
+def get_current_admin(
+    data: AdminLogin,
+    db: Session = Depends(get_db)
+):
+    admin = db.query(Admin).filter(Admin.email == data.email).first()
 
     if not admin:
         raise HTTPException(
@@ -26,7 +47,7 @@ def get_current_admin(email: str, password: str, db: Session = Depends(get_db)):
             detail="Admin access required"
         )
 
-    if not verify_password(password, admin.hashed_password):
+    if not verify_password(data.password, admin.hashed_password):
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"
