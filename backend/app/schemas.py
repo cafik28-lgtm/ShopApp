@@ -11,13 +11,8 @@ class UserLogin(BaseModel):
     password: str
 
 class UserCreate(BaseModel):
-    first_name: str
-    last_name: str
     hashed_password: str
     email: str
-    phone: str | None = None
-    country: str | None = None
-    city: str | None = None
 
 
 class UserUpdate(BaseModel):
@@ -32,8 +27,8 @@ class UserUpdate(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    first_name: str
-    last_name: str
+    first_name: str | None = None
+    last_name: str | None = None
     email: str
     phone: str | None = None
     avatar: str | None = None

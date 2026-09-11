@@ -5,13 +5,9 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const firstName = ref('');
-const lastName = ref('');
 const email = ref('');
 const password = ref('');
-const phone = ref('');
-const country = ref('');
-const city = ref('');
+
 
 const error = ref('');
 
@@ -19,13 +15,8 @@ async function handleRegister() {
     error.value = '';
     try {
         const response = await createUser(
-            firstName.value,
-            lastName.value,
             email.value,
             password.value,
-            phone.value,
-            country.value,
-            city.value
         );
         if (response.ok) {
             const data = await response.json();
@@ -48,27 +39,6 @@ async function handleRegister() {
             <h1>Register</h1>
 
             <form @submit.prevent="handleRegister">
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>First name:</label>
-                        <input
-                            type="text"
-                            v-model="firstName"
-                            required
-                        />
-                    </div>
-
-                    <div class="input-group">
-                        <label>Last name:</label>
-                        <input
-                            type="text"
-                            v-model="lastName"
-                            required
-                        />
-                    </div>
-                </div>
-
                 <div class="input-row">
                     <div class="input-group">
                         <label>Email:</label>
@@ -87,32 +57,6 @@ async function handleRegister() {
                             required
                         />
                     </div>
-                </div>
-
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Phone:</label>
-                        <input
-                            type="tel"
-                            v-model="phone"
-                        />
-                    </div>
-
-                    <div class="input-group">
-                        <label>Country:</label>
-                        <input
-                            type="text"
-                            v-model="country"
-                        />
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label>City:</label>
-                    <input
-                        type="text"
-                        v-model="city"
-                    />
                 </div>
 
                 <button type="submit" class="register-button">

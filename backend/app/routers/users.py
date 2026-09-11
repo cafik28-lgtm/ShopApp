@@ -8,7 +8,7 @@ from app.models import User
 from app.schemas import UserCreate, UserUpdate, UserResponse, UserLogin
 from  ..utils.password import hash_password
 from  ..utils.admin import get_current_admin
-from  ..utils.user import get_current_user
+from  ..utils.user import get_current_user, get_current_user_from_headers
 
 router = APIRouter(
     prefix='/users',
@@ -20,13 +20,13 @@ os.makedirs(AVATARS_DIR, exist_ok=True)
 
 
 @router.post("/login")
-def login_admin(
+def login_user(
     data: UserLogin,
     current_user = Depends(get_current_user)
 ):
     return {
         "message": "User login successful",
-        "admin_id": current_user.id,
+        "user_id": current_user.id,
         "email": current_user.email
     }
 
@@ -50,21 +50,10 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     if email_check:
         raise HTTPException(status_code=400, detail='Email already registered')
 
-    if user_in.phone:
-        phone_check = db.query(User).filter(User.phone == user_in.phone).first()
-        if phone_check:
-            raise HTTPException(status_code=400, detail='Phone already registered')
-
     try:
         db_user = User(
-            first_name=user_in.first_name,
-            last_name=user_in.last_name,
             hashed_password=hash_password(user_in.hashed_password),
             email=user_in.email,
-            phone=user_in.phone or None,
-            avatar=None,
-            country=user_in.country,
-            city=user_in.city
         )
         db.add(db_user)
         db.commit()
@@ -127,7 +116,12 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
 
 # чисто аву обновить
 @router.put('/{user_id}/avatar', response_model=UserResponse)
-def upload_user_avatar(user_id: int, avatar: UploadFile = File(...), db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def upload_user_avatar(
+    user_id: int,
+    avatar: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user_from_headers)
+):
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail='You can only update your own avatar')
     

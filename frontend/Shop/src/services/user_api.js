@@ -18,13 +18,8 @@ export async function loginUser(email, password) {
 }
 
 export async function createUser(
-    firstName, 
-    lastName,
     email, 
-    password, 
-    phone, 
-    country, 
-    city) {
+    password, ) {
         const response = await fetch(
         `${API_URL}/users/`, {
             method: "POST",
@@ -32,14 +27,38 @@ export async function createUser(
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                first_name: firstName,
-                last_name: lastName,
                 hashed_password: password,
                 email: email,
-                phone: phone,
-                country: country,
-                city: city
             })
+        }
+    );
+
+    return response;
+}
+
+export async function getUser(userId) {
+    const response = await fetch(
+        `${API_URL}/users/${userId}`
+    );
+
+    return response;
+}
+
+export async function uploadAvatar(userId, file) {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    const response = await fetch(
+        `${API_URL}/users/${userId}/avatar`,
+        {
+            method: 'PUT',
+            headers: {
+                email: user.email,
+                password: user.password
+            },
+            body: formData
         }
     );
 

@@ -20,7 +20,13 @@ async function handleLogin() {
         response = await loginUser( email.value, password.value );
         if (response.ok) { 
             const data = await response.json();
-            localStorage.setItem('user', JSON.stringify(data));
+            localStorage.setItem(
+                'user',
+                JSON.stringify({
+                    ...data,
+                    password: password.value
+                })
+            );
             console.log('User logged in:', data);
             window.location.href = '/';
             return;
