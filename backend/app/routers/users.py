@@ -8,7 +8,7 @@ from app.models import User
 from app.schemas import UserCreate, UserUpdate, UserResponse, UserLogin
 from  ..utils.password import hash_password
 from  ..utils.admin import get_current_admin
-from  ..utils.user import get_current_user, get_current_user_from_headers
+from  ..utils.user import get_current_user_headers, get_current_user_from_headers
 
 router = APIRouter(
     prefix='/users',
@@ -22,7 +22,7 @@ os.makedirs(AVATARS_DIR, exist_ok=True)
 @router.post("/login")
 def login_user(
     data: UserLogin,
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
 ):
     return {
         "message": "User login successful",
@@ -65,7 +65,7 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
 
 # обновляем инфу о пользователе
 @router.put('/{user_id}', response_model=UserResponse)
-def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user_headers)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail='User not found')   
@@ -120,7 +120,7 @@ def upload_user_avatar(
     user_id: int,
     avatar: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user_from_headers)
+    current_user = Depends(get_current_user_headers)
 ):
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail='You can only update your own avatar')

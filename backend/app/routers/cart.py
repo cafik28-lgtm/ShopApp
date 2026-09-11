@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Order, User, Admin, OrderItem, Product
 from app.schemas import OrderResponse
-from ..utils.user import get_current_user
+from ..utils.user import get_current_user_headers
 from ..utils.admin import get_current_admin
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.get('/')
 def get_cart(
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_user_headers),
     db: Session = Depends(get_db)
 ):
     db_order = db.query(Order) \

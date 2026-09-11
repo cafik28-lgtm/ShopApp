@@ -12,7 +12,7 @@ from app.models import User
 from app.models import Category
 
 from ..utils.admin import check_admin
-from ..utils.user import get_current_user, check_user
+from ..utils.user import get_current_user_headers, check_user
 
 from datetime import datetime
 
@@ -47,7 +47,7 @@ def create_product(
     user_id: int,
     product: ProductCreate, 
     db: Session = Depends(get_db), 
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
     ):
 
     db_user = db.query(User) \
@@ -103,7 +103,7 @@ def create_product(
 def update_product(product: ProductUpdate, 
                    product_id: int,
                    db: Session = Depends(get_db),
-                   current_user = Depends(get_current_user)
+                   current_user = Depends(get_current_user_headers)
                    ):
     
     db_product = db.query(Product) \
@@ -171,7 +171,7 @@ def upload_product_media(
         product_id: int,
         media: UploadFile = File(...), 
         db: Session = Depends(get_db), 
-        current_user = Depends(get_current_user)
+        current_user = Depends(get_current_user_headers)
     ):
     db_product = db.query(Product) \
                         .filter(Product.id == product_id) \

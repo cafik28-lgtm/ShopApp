@@ -34,6 +34,9 @@ async function logOut() {
                 <router-link v-if="user" :to="`/user/profile/${userId}`" class="login-link">
                     Profile
                 </router-link>
+                <router-link v-if="admin" to="/admin/categories" class="login-link">
+                    Categories
+                </router-link>
                 <button class="logout-button" 
                         v-if="admin || user" 
                         type="submit" 

@@ -1,13 +1,12 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import Admin, User
+from app.models import User
 from .password import verify_password
 from app.schemas import UserLogin
-from fastapi import Header
 
-def get_current_user_from_headers(
+def get_current_user_headers(
     email: str = Header(...),
     password: str = Header(...),
     db: Session = Depends(get_db)
@@ -27,6 +26,13 @@ def get_current_user_from_headers(
         )
 
     return user
+
+def get_current_user_from_headers(
+    email: str = Header(...),
+    password: str = Header(...),
+    db: Session = Depends(get_db)
+):
+    return get_current_user_headers(email=email, password=password, db=db)
 
 def get_current_user(
     data: UserLogin,

@@ -5,7 +5,8 @@ from datetime import datetime
 from app.database import get_db
 from app.models import ProductFeedback, Product
 from app.schemas import ProductFeedbackCreate, ProductFeedbackResponse
-from ..utils.user import get_current_user
+from ..utils.user import get_current_user_headers
+
 
 router = APIRouter(
     prefix="/feedbacks",
@@ -27,7 +28,7 @@ def get_product_feedbacks(product_id: int, db: Session = Depends(get_db)):
 def create_feedback(
     feedback_in: ProductFeedbackCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
 ):
     product = db.query(Product).filter(Product.id == feedback_in.product_id).first()
     if not product:
@@ -53,7 +54,7 @@ def create_feedback(
 def delete_feedback(
     feedback_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
 ):
     db_feedback = db.query(ProductFeedback).filter(ProductFeedback.id == feedback_id).first()
     if not db_feedback:

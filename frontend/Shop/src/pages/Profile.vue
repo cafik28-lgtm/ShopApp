@@ -73,6 +73,29 @@ async function handleAvatarUpload(event) {
     }
 }
 
+// обновляет данные юзера на бэке
+async function handleUpdate() {
+    error.value = '';
+    try {
+        const userId = route.params.userId;
+        const response = await updateUser(userId, {
+            first_name: first_name.value,
+            last_name: last_name.value,
+            email: email.value,
+            phone: phone.value,
+            country: country.value,
+            city: city.value
+        });
+
+        if (!response.ok) {
+            const data = await response.json();
+            error.value = data.detail || 'Помилка оновлення профілю';
+        }
+    } catch (err) {
+        error.value = 'Помилка підключення до сервера';
+    }
+}
+
 onMounted(getProfile);
 
 </script>

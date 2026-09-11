@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.utils.admin import get_current_admin
+from app.models import Admin
+from app.utils.password import verify_password
 from app.schemas import AdminLogin
 
 router = APIRouter(
@@ -14,10 +15,18 @@ router = APIRouter(
 @router.post("/login")
 def login_admin(
     data: AdminLogin,
-    current_admin = Depends(get_current_admin)
+    db: Session = Depends(get_db)
 ):
+    admin = db.query(Admin).filter(Admin.email == data.email).first()
+
+    if not admin or not verify_password(data.password, admin.hashed_password):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid email or password"
+        )
+
     return {
         "message": "Admin login successful",
-        "admin_id": current_admin.id,
-        "email": current_admin.email
+        "admin_id": admin.id,
+        "email": admin.email
     }

@@ -36,7 +36,7 @@ def create_category(cat: CategoryCreate, db: Session = Depends(get_db), current_
         return db_cat
     except Exception as err:
         db.rollback()
-        raise HTTPException(status_code=404, detail=str(err))
+        raise HTTPException(status_code=400, detail=str(err))
 
 @router.put('/{category_id}', response_model=CategoryResponse)
 def update_category(category_id: int, cat: CategoryUpdate, db: Session = Depends(get_db), current_admin = Depends(get_current_admin)):

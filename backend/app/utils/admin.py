@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -36,10 +36,11 @@ def create_default_admin(db: Session):
 #     return admin
 
 def get_current_admin(
-    data: AdminLogin,
+    email: str = Header(...),
+    password: str = Header(...),
     db: Session = Depends(get_db)
 ):
-    admin = db.query(Admin).filter(Admin.email == data.email).first()
+    admin = db.query(Admin).filter(Admin.email == email).first()
 
     if not admin:
         raise HTTPException(
@@ -47,7 +48,7 @@ def get_current_admin(
             detail="Admin access required"
         )
 
-    if not verify_password(data.password, admin.hashed_password):
+    if not verify_password(password, admin.hashed_password):
         raise HTTPException(
             status_code=401,
             detail="Invalid email or password"

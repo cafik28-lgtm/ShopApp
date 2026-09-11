@@ -7,7 +7,8 @@ from app.schemas import OrderItemCreate, OrderItemResponse, OrderItemUpdate
 
 from app.models import User
 
-from ..utils.user import get_current_user
+from ..utils.user import get_current_user_headers
+
 
 from datetime import datetime
 
@@ -19,7 +20,7 @@ router = APIRouter(
 @router.get('/cart/{ori_id}', response_model=OrderItemResponse)
 def get_cart_item(
     ori_id: int,
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_user_headers),
     db: Session = Depends(get_db)
 ):
     db_ori = db.query(OrderItem) \
@@ -46,7 +47,7 @@ def create_ori(
     product_id: int,
     ori: OrderItemCreate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
 ):
     db_user = db.query(User) \
             .filter(User.id == user_id) \
@@ -172,7 +173,7 @@ def update_ori(
     ori: OrderItemUpdate,
     ori_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
 ):
     db_ori = db.query(OrderItem) \
             .filter(OrderItem.id == ori_id) \
@@ -259,7 +260,7 @@ def update_ori(
 @router.delete('/{ori_id}')
 def delete_ori(
     ori_id: int,
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_user_headers),
     db: Session = Depends(get_db)
 ): 
     db_ori = db.query(OrderItem) \

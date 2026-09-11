@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
 import Profile from '../pages/Profile.vue';
+import AdminCategories from '../components/AdminCategories.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -18,6 +19,10 @@ const router = createRouter({
         {
             path: '/user/profile/:userId',
             component: Profile 
+        },
+        {
+            path: '/admin/categories',
+            component: AdminCategories
         }
     ]
 });

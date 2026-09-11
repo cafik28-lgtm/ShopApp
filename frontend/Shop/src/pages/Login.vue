@@ -6,18 +6,24 @@ import { loginUser } from '../services/user_api';
 const email = ref('');
 const password = ref('');
 const error = ref('');
+
 async function handleLogin() { 
     error.value = '';
     try {
-        let response = await loginAdmin( email.value, password.value ); 
+        let response = await loginAdmin(email.value, password.value); 
         if (response.ok) {
             const data = await response.json();
-            localStorage.setItem('admin', JSON.stringify(data));
+            localStorage.setItem('admin', JSON.stringify({
+                ...data,
+                email: email.value,
+                password: password.value
+            }));
             console.log('Admin logged in:', data);
             window.location.href = '/';
             return;
         } 
-        response = await loginUser( email.value, password.value );
+
+        response = await loginUser(email.value, password.value);
         if (response.ok) { 
             const data = await response.json();
             localStorage.setItem(
@@ -31,12 +37,13 @@ async function handleLogin() {
             window.location.href = '/';
             return;
         } 
+
         const data = await response.json();
-        error.value = data.detail;
-        } catch (err) {
-             error.value = 'Помилка підключення до сервера';
-        } 
+        error.value = data.detail || 'Помилка входу';
+    } catch (err) {
+        error.value = 'Помилка підключення до сервера';
     } 
+} 
 </script>
 
 <template>
@@ -75,7 +82,6 @@ async function handleLogin() {
                         Register
                     </router-link>
                 </div>
-                
             </form>
 
             <p v-if="error" class="error">

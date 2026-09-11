@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Order, User, Admin, OrderItem, Product
 from app.schemas import OrderResponse
-from ..utils.user import get_current_user
+from ..utils.user import get_current_user_headers
 from ..utils.admin import get_current_admin
 
 router = APIRouter(
@@ -22,7 +22,7 @@ def get_user_or_admin(email: str = None, password: str = None, db: Session = Dep
     
     try:
         if email and password:
-            return get_current_user(email=email, password=password, db=db)
+            return get_current_user_headers(email=email, password=password, db=db)
     except HTTPException:
         pass
         
@@ -41,7 +41,7 @@ def get_orders(
 
 @router.get('/orders', response_model=list[OrderResponse])
 def get_user_orders(
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_user_headers),
     db: Session = Depends(get_db)
 ):
     return db.query(Order) \
@@ -71,7 +71,7 @@ def get_user_orders(
 def delete_order(
     order_id: int, 
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
 ):
     order = db.query(Order).filter(Order.id == order_id).first()
     if not order:

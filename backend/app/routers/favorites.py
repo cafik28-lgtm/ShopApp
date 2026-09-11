@@ -6,7 +6,8 @@ from app.models import Product, Favorite
 from app.schemas import FavoriteResponse
 from app.models import User
 
-from ..utils.user import get_current_user
+from ..utils.user import get_current_user_headers
+
 
 
 
@@ -18,7 +19,7 @@ router = APIRouter(
 @router.post('/', response_model=FavoriteResponse)
 def create_favorite(
     product_id: int,
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_user_headers),
     db: Session = Depends(get_db),
    
 ):
@@ -65,7 +66,7 @@ def create_favorite(
 def delete_favorite(
     product_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_user_headers)
 ):
     db_fav = db.query(Favorite) \
     .filter(
@@ -94,7 +95,7 @@ def delete_favorite(
             
 @router.get('/')
 def get_favorites(
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_user_headers),
     db: Session = Depends(get_db)
 ):
     db_favorite = db.query(Favorite) \
