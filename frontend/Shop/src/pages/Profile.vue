@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { getUser, uploadAvatar } from '../services/user_api';
+import { getUser, uploadAvatar, updateUser } from '../services/user_api';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -30,9 +30,9 @@ async function getProfile() {
         if (response.ok) {
             const data = await response.json();
 
-            email.value = data.email;
             first_name.value = data.first_name;
             last_name.value = data.last_name;
+            email.value = data.email;
             phone.value = data.phone;
             avatar.value = data.avatar;
             city.value = data.city;
@@ -81,13 +81,21 @@ async function handleUpdate() {
         const response = await updateUser(userId, {
             first_name: first_name.value,
             last_name: last_name.value,
-            email: email.value,
             phone: phone.value,
             country: country.value,
             city: city.value
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+            const data = await response.json();
+
+            first_name.value = data.first_name;
+            last_name.value = data.last_name;
+            phone.value = data.phone;
+            country.value = data.country;
+            city.value = data.city;
+        }
+        else {
             const data = await response.json();
             error.value = data.detail || 'Помилка оновлення профілю';
         }
@@ -168,13 +176,7 @@ onMounted(getProfile);
                         <div class="info-item">
                             <span class="label">Email</span>
 
-                            <input
-                                v-if="isOwnProfile"
-                                v-model="email"
-                                type="email"
-                            />
-
-                            <span v-else class="value">
+                            <span class="value">
                                 {{ email || 'None' }}
                             </span>
                         </div>

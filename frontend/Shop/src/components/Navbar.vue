@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const admin = ref(
     JSON.parse(localStorage.getItem('admin')) || null
@@ -17,12 +20,16 @@ function handleLogout() {
     localStorage.removeItem('user');
     window.location.href = '/';
 }
+
+function startPage(){
+    router.push('/');
+}
 </script>
 
 <template>
     <nav class="navbar navbar-dark bg-dark">
         <div class="container">
-            <img src="../../public/brand.png" class="logo" />
+            <img src="../../public/brand.png" @click="startPage" class="logo" />
 
             <div>
                 <router-link v-if="!admin && !user" to="/login" class="login-link">

@@ -8,7 +8,7 @@ from app.models import User
 from app.schemas import UserCreate, UserUpdate, UserResponse, UserLogin
 from  ..utils.password import hash_password
 from  ..utils.admin import get_current_admin
-from  ..utils.user import get_current_user_headers, get_current_user_from_headers
+from  ..utils.user import get_current_user_headers, get_current_user
 
 router = APIRouter(
     prefix='/users',
@@ -22,7 +22,7 @@ os.makedirs(AVATARS_DIR, exist_ok=True)
 @router.post("/login")
 def login_user(
     data: UserLogin,
-    current_user = Depends(get_current_user_headers)
+    current_user = Depends(get_current_user)
 ):
     return {
         "message": "User login successful",

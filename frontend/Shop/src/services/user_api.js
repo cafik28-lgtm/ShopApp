@@ -64,3 +64,22 @@ export async function uploadAvatar(userId, file) {
 
     return response;
 }
+
+export async function updateUser(userId, data) {
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    const response = await fetch(
+        `${API_URL}/users/${userId}`,
+        {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                email: user.email,
+                password: user.password
+            },
+            body: JSON.stringify(data)
+        }
+    );
+
+    return response;
+}
