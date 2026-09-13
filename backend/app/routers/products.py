@@ -219,8 +219,7 @@ def upload_product_media(
 @router.delete('/{product_id}')
 def delete_product(
         product_id: int,
-        email: str,
-        password: str,
+        current_user = Depends(get_current_user_headers),
         db: Session = Depends(get_db), 
     ):
      
@@ -233,29 +232,37 @@ def delete_product(
             detail="Product not found"
         )
 
-    is_admin = check_admin(email, password, db)
-    is_seller = check_user(email, password, db)
+    db_user = db.query(User) \
+        .filter(User.id == db_product.seller_id) \
+        .first()
 
-    if not is_admin and not is_seller:
+    if not db_user:
         raise HTTPException(
-            status_code=403,
-            detail="Only seller or admin can delete product"
+            status_code=404,
+            detail="User not found"
         )
 
-    if is_seller:
-        user = db.query(User).filter(User.email == email).first()
+    try:
+        is_admin = check_admin(
+            current_user.email,
+            None,
+            db
+        )
 
-        if user.id != db_product.seller_id and not is_admin:
+        if current_user.id != db_product.seller_id and not is_admin:
             raise HTTPException(
                 status_code=403,
-                detail="You can only delete your products"
+                detail="Only seller or admin can delete product"
             )
 
-    try:
         db.delete(db_product)
         db.commit()
 
-        return {'message': 'Product deleted successfully'}
+        return {
+            'message': 'Product deleted successfully'
+        }
+    except HTTPException:
+        raise
 
     except Exception as err:
         db.rollback()
@@ -263,6 +270,3 @@ def delete_product(
             status_code=400,
             detail=str(err)
         )
-            
-    
-    

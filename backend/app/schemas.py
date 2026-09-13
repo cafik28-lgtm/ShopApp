@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from datetime import datetime
-from app.models import Product
 
 class AdminLogin(BaseModel):
     email: str

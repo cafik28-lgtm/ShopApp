@@ -6,6 +6,9 @@ import Profile from '../pages/Profile.vue';
 import AdminCategories from '../components/AdminCategories.vue';
 import Products from '../components/Products.vue';
 import Product from '../components/Product.vue';
+import CreateProduct from '../components/CreateProduct.vue';
+import ProductUpload from '../components/ProductUpload.vue';
+import UpdateProduct from '../components/UpdateProduct.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -33,6 +36,18 @@ const router = createRouter({
         {
             path: '/products/:productId',
             component: Product
+        },
+        {
+            path: '/products/seller=:userId/create/',
+            component: CreateProduct
+        },
+        {
+            path:'/products/:productId/media',
+            component: ProductUpload
+        },
+        {
+            path:'/products/:productId/edit',
+            component: UpdateProduct
         }
     ]
 });

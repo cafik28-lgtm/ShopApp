@@ -73,7 +73,6 @@ async function handleAvatarUpload(event) {
     }
 }
 
-// обновляет данные юзера на бэке
 async function handleUpdate() {
     error.value = '';
     try {
@@ -231,13 +230,6 @@ onMounted(getProfile);
                         style="margin-right: 15px;"
                         >
                             Save changes
-                        </button>
-
-                        <button @click="addProduct"
-                        v-if="isOwnProfile"
-                        class="save-button"
-                        >
-                            Add Product
                         </button>
                     </div>
                    

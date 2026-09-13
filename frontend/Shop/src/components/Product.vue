@@ -1,19 +1,25 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { getProduct } from '../services/product_api';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getUser } from '../services/user_api';
+import { getCategorie } from '../services/category_api';
 
 const route = useRoute();
+const router = useRouter();
 
 const product = ref(null);
 const error = ref('');
 const seller = ref(null);
+const category = ref(null);
+
+const currentUser = JSON.parse(localStorage.getItem('user'));
+const currentUserId = currentUser ? currentUser.user_id : null;
+
+const productId = route.params.productId;
 
 async function fetchProduct() {
     try {
-        const productId = route.params.productId;
-
         const response = await getProduct(productId);
 
         if (response.ok) {
@@ -26,6 +32,16 @@ async function fetchProduct() {
             } else {
                 const data = await response.json();
                 error.value = data.detail || 'Error with get seller';
+                return;
+            }
+
+            const categoryResponse = await getCategorie(product.value.category_id);
+
+            if (categoryResponse.ok) {
+                category.value = await categoryResponse.json();
+            } else {
+                const data = await categoryResponse.json();
+                error.value = data.detail || 'Error with get category';
             }
         } else {
             const data = await response.json();
@@ -34,6 +50,10 @@ async function fetchProduct() {
     } catch (err) {
         error.value = 'Помилка підключення до сервера';
     }
+}
+
+async function updateProduct() {
+    router.push(`/products/${productId}/edit`)
 }
 
 onMounted(fetchProduct);
@@ -62,11 +82,7 @@ onMounted(fetchProduct);
 
             <div class="product-info">
 
-                <h1>{{ product.name }}</h1>
-
-                <p class="price">
-                    {{ product.cost }} ₴
-                </p>
+                <h1>{{ product.name }} | {{ product.cost }}$</h1>
 
                 <p class="description">
                     {{ product.description || 'No description' }}
@@ -80,21 +96,44 @@ onMounted(fetchProduct);
                     Available: 0
                 </p>
 
-                <button
+                <div v-if="category" class="category">
+                    <span class="category-name">
+                        Category: {{ category.name }}
+                    </span>
+
+                    <span class="category-description">
+                        - {{ category.description || 'No description' }}
+                    </span>
+                </div>
+                <div class="bottom-div">
+                    <button v-if="product.seller_id !== currentUserId"
                     class="buy-button"
                     :class="product.in_stock ? 'available' : 'unavailable'"
                     :disabled="!product.in_stock"
-                >
-                    Buy
-                </button>
+                    >
+                        Buy
+                    </button>
+                    <div class="choice-div" v-else>
+                        <button
+                        class="buy-button available"
+                        style="margin-right: 10px;"
+                        @click="updateProduct"
+                        >
+                            Update
+                        </button>
+                        <button
+                        class="buy-button available"
+                        style="background: #dc3545;"
+                        >
+                            Delete
+                        </button>
+                    </div>
 
-                <router-link :to="`/user/profile/${seller.id}`"
-                        class="seller-link">
-                    {{ seller.first_name }}{{ seller.last_name }}
-                </router-link>
-
-                
-
+                    <router-link :to="`/user/profile/${seller.id}`"
+                            class="seller-link">
+                        {{ seller.first_name || seller.last_name ? seller.first_name + ' ' + seller.last_name + ' | ' : '' }} {{ seller.email }}
+                    </router-link>
+                </div>
             </div>
 
         </div>
@@ -215,6 +254,17 @@ onMounted(fetchProduct);
 
 .seller-link:hover {
     transform: translateY(-2px);
+}
+
+.bottom-div{
+    display: flex;
+    flex-direction: column;
+    margin-top: 120px;
+}
+
+.choice-div{
+    display: flex;
+
 }
 
 @media (max-width: 700px) {

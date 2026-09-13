@@ -1,9 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { getProducts } from '../services/product_api';
+import { useRoute, useRouter } from 'vue-router';
 
 const products = ref([]);
 const error = ref('');
+
+const router = useRouter();
+
+const user = JSON.parse(localStorage.getItem('user'));
 
 async function fetchProducts() {
     try {
@@ -20,13 +25,26 @@ async function fetchProducts() {
     }
 }
 
+async function addProduct() {
+    router.push(`/products/seller=${user.user_id}/create`);
+}
+
 onMounted(fetchProducts);
 </script>
 
 <template>
     <div class="products-page">
-
-        <h1>Products</h1>
+        <div class="header-product">
+            <h1>Products</h1>
+            <button class="details-button" 
+                        v-if="user" 
+                        type="button" 
+                        @click="addProduct"
+                >
+                    Add product
+                </button>
+        </div>
+        
 
         <p v-if="error" class="error">
             {{ error }}
@@ -54,11 +72,7 @@ onMounted(fetchProducts);
                 </div>
 
                 <div class="product-info">
-                    <h2>{{ p.name }}</h2>
-
-                    <p class="product-price">
-                        {{ p.cost }} $
-                    </p>
+                    <h2>{{ p.name }} |  {{ p.cost }}$</h2>
 
                     <router-link :to="`/products/${p.id}`" class="details-button">
                         View details
@@ -173,6 +187,18 @@ onMounted(fetchProducts);
     color: #dc3545;
 }
 
+.header-product .details-button {
+    width: 15vw;
+    font-size: 32px;
+    margin-bottom: 18px;
+    margin-left: 15px;
+}
+
+.header-product {
+    display: flex;
+    align-items: center;
+    
+}
 @media (max-width: 900px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
