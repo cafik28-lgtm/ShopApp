@@ -11,15 +11,12 @@ const user = ref(
 const data = JSON.parse(localStorage.getItem('user'));
 const userId = data ? data.user_id : null;
 
-console.log(`${admin}, ${user}`);
-
-async function logOut() {
-    localStorage.removeItem('user');
+// немног передалал логаут
+function handleLogout() {
     localStorage.removeItem('admin');
-
-    window.location.reload();
+    localStorage.removeItem('user');
+    window.location.href = '/';
 }
-
 </script>
 
 <template>
@@ -39,8 +36,8 @@ async function logOut() {
                 </router-link>
                 <button class="logout-button" 
                         v-if="admin || user" 
-                        type="submit" 
-                        @click="logOut"
+                        type="button" 
+                        @click="handleLogout"
                 >
                     Logout
                 </button>
@@ -51,7 +48,6 @@ async function logOut() {
 </template>
 
 <style scoped>
-
 .navbar {
     width: 100%;
     height: 90px;
@@ -72,12 +68,21 @@ async function logOut() {
     color: white;
     text-decoration: none;
     font-size: 20px;
-    margin-right: 10px;
+    margin-right: 15px;
 }
+
+.login-link:hover {
+    color: #adb5bd;
+}
+
 .logout-button {
     background: none;
     border: none;
     cursor: pointer;
     padding: 0;
+}
+
+.logout-button:hover {
+    color: #adb5bd;
 }
 </style>
