@@ -4,6 +4,14 @@ export async function getCategories() {
     return await fetch(`${API_URL}/categories/`);
 }
 
+export async function getCategorie(categoryId) {
+    const response = await fetch(
+        `${API_URL}/categories/${categoryId}`
+    );
+    
+    return response;
+}
+
 export async function createCategory(name, description) {
     const admin = JSON.parse(localStorage.getItem('admin'));
     return await fetch(`${API_URL}/categories/`, {

@@ -223,13 +223,24 @@ onMounted(getProfile);
 
                     </div>
 
-                    <button
+                    <div>
+                        <button
                         v-if="isOwnProfile"
                         class="save-button"
                         type="submit"
-                    >
-                        Save changes
-                    </button>
+                        style="margin-right: 15px;"
+                        >
+                            Save changes
+                        </button>
+
+                        <button @click="addProduct"
+                        v-if="isOwnProfile"
+                        class="save-button"
+                        >
+                            Add Product
+                        </button>
+                    </div>
+                   
 
                     <p v-if="error" class="error">
                         {{ error }}

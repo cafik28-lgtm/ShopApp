@@ -4,6 +4,8 @@ import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
 import Profile from '../pages/Profile.vue';
 import AdminCategories from '../components/AdminCategories.vue';
+import Products from '../components/Products.vue';
+import Product from '../components/Product.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -23,6 +25,14 @@ const router = createRouter({
         {
             path: '/admin/categories',
             component: AdminCategories
+        },
+        {
+            path: '/',
+            component: Products
+        },
+        {
+            path: '/products/:productId',
+            component: Product
         }
     ]
 });

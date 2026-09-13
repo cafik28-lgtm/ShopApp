@@ -54,6 +54,7 @@ app.include_router(favorites_router)
 
 # для аватарок
 app.mount("/avatars", StaticFiles(directory="avatars"), name="avatars")
+app.mount("/media", StaticFiles(directory="media"), name="media")
 
 @app.get('/')
 def root():

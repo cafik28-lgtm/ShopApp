@@ -8,6 +8,5 @@ const route = useRoute()
 <template>
     <Navbar v-if="route.path !== '/login' 
     && route.path !== '/user/register'" />
-
     <router-view />
 </template>
