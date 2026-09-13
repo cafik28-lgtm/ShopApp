@@ -2,8 +2,10 @@
 import { onMounted, ref } from 'vue';
 import { getUser, uploadAvatar, updateUser } from '../services/user_api';
 import { useRoute } from 'vue-router';
+import { getProducts } from '../services/product_api';
 
 const route = useRoute();
+const products = ref([]);
 
 const email = ref('');
 const first_name = ref('');
@@ -43,6 +45,26 @@ async function getProfile() {
         }
     } catch (err) {
         error.value = 'Помилка підключення до сервера';
+    }
+}
+
+async function fetchSellerProducts() {
+    try {
+        const response = await getProducts();
+
+        if (response.ok) {
+            const data = await response.json();
+
+            products.value = data.filter(
+                product => 
+                product.seller_id == route.params.userId
+            );
+        } else {
+            const data = await response.json();
+            error.value = data.detail || 'Failed to load products';
+        }
+    } catch (err) {
+        error.value = 'Connection error';
     }
 }
 
@@ -104,7 +126,7 @@ async function handleUpdate() {
 }
 
 onMounted(getProfile);
-
+onMounted(fetchSellerProducts);
 </script>
 
 
@@ -239,6 +261,42 @@ onMounted(getProfile);
                     </p>
                 </div>
             </form>
+            <div class="seller-products">
+                <h2>Products</h2>
+                <div v-if="products.length" class="products-grid">
+                    <div
+                        v-for="p in products"
+                        :key="p.id"
+                        class="product-card"
+                        :class="p.in_stock ? 'in-stock' : 'out-of-stock'"
+                    >
+                        <div class="product-image">
+                            <img
+                                v-if="p.photo"
+                                :src="`http://127.0.0.1:8000/${p.photo}`"
+                                alt="product"
+                            />
+                            <div v-else class="no-photo">
+                                No photo
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <h3>{{ p.name }}</h3>
+                            <p class="product-price">
+                                {{ p.cost }}$
+                            </p>
+                            <router-link
+                                :to="`/products/${p.id}`"
+                                class="details-button"
+                            >
+                                View details
+                            </router-link>
+                        </div>
+                    </div>
+                </div>
+                <p v-else class="no-products">
+                </p>
+            </div>
         </div>
     </div>
 </template>
@@ -375,6 +433,103 @@ onMounted(getProfile);
 .error {
     margin-top: 20px;
     color: #dc3545;
+}
+
+.seller-products {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.seller-products h2 {
+    margin-bottom: 20px;
+    color: #212529;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.product-card {
+    overflow: hidden;
+    background: white;
+    border: 3px solid #212529;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.product-card.in-stock {
+    border-color: #212529;
+}
+
+.product-card.out-of-stock {
+    border-color: #dc3545;
+}
+
+.product-image {
+    width: 100%;
+    height: 180px;
+    background: #f1f1f1;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.no-photo {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #777;
+}
+
+.product-info {
+    padding: 15px;
+}
+
+.product-info h3 {
+    margin: 0 0 10px;
+}
+
+.product-price {
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.details-button {
+    display: block;
+    width: 100%;
+    padding: 9px;
+    border-radius: 8px;
+    background: #212529;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.no-products {
+    color: #777;
+}
+
+@media (max-width: 900px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 800px) {
