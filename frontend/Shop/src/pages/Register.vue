@@ -1,15 +1,12 @@
 <script setup>
 import { ref } from 'vue';
-import { createUser } from '../services/user_api';
 import { useRouter } from 'vue-router';
-
-const router = useRouter();
+import { createUser } from '../services/user_api';
 
 const email = ref('');
 const password = ref('');
-
-
 const error = ref('');
+const router = useRouter();
 
 async function handleRegister() {
     error.value = '';
@@ -34,123 +31,127 @@ async function handleRegister() {
 </script>
 
 <template>
-    <div class="register-page">
-        <div class="register-card">
-            <h1>Register</h1>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Register</h2>
 
-            <form @submit.prevent="handleRegister">
-                <div class="input-row">
-                    <div class="input-group">
-                        <label>Email:</label>
-                        <input
-                            type="email"
-                            v-model="email"
-                            required
-                        />
-                    </div>
+            <p v-if="error" class="error">{{ error }}</p>
 
-                    <div class="input-group">
-                        <label>Password:</label>
-                        <input
-                            type="password"
-                            v-model="password"
-                            required
-                        />
-                    </div>
+            <form @submit.prevent="handleRegister" class="auth-form">
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" v-model="email" required class="form-input" />
                 </div>
 
-                <button type="submit" class="register-button">
-                    Register
-                </button>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" v-model="password" required class="form-input" />
+                </div>
 
-                <router-link to="/login" class="back-link">
-                    Back to login
-                </router-link>
+                <button type="submit" class="auth-button">Register</button>
             </form>
 
-            <p v-if="error" class="error">
-                {{ error }}
-            </p>
+            <div class="auth-links">
+                <router-link to="/login" class="link">Back to login</router-link>
+            </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.register-page {
-    min-height: 100vh;
+.auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: calc(100vh - 90px);
     background: #f5f5f5;
 }
 
-.register-card {
-    width: 600px;
-    padding: 35px;
+.auth-card {
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-}
-
-.register-card h1 {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.input-row {
-    display: flex;
-    gap: 20px;
-}
-
-.input-group {
-    flex: 1;
-    margin-bottom: 18px;
-}
-
-.input-group label {
-    display: block;
-    margin-bottom: 7px;
-}
-
-.input-group input {
+    padding: 40px;
+    border-radius: 18px;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    max-width: 400px;
     box-sizing: border-box;
 }
 
-.register-button {
-    width: 100%;
-    padding: 11px;
-    margin-top: 5px;
-    border: none;
-    border-radius: 8px;
-    background: #212529;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
+.auth-card h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 32px;
+    color: #212529;
 }
 
-.register-button:hover {
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 15px;
+    color: #333;
+}
+
+.form-input {
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #fafafa;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    border-color: #212529;
+}
+
+.auth-button {
+    margin-top: 10px;
+    padding: 12px;
+    background: #212529;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.auth-button:hover {
     background: #343a40;
 }
 
-.back-link {
-    display: block;
-    text-align: center;
-    margin-top: 15px;
-    color: #212529;
-    text-decoration: none;
+.auth-links {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
 }
 
-.back-link:hover {
+.link {
+    color: #212529;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.link:hover {
     text-decoration: underline;
 }
 
 .error {
-    margin-top: 15px;
-    text-align: center;
     color: #dc3545;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 14px;
 }
 </style>

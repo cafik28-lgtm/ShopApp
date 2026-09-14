@@ -80,6 +80,8 @@ class ProductResponse(BaseModel):
     created_at: datetime
     seller_id: int
     category_id: int
+    average_rating: float = 0.0
+    reviews_count: int = 0
 
     class Config:
         from_attributes = True
@@ -164,6 +166,22 @@ class FavoriteResponse(BaseModel):
     id: int
     user_id: int
     product_id: int
+
+    class Config:
+        from_attributes = True
+
+class ProductFeedbackCreate(BaseModel):
+    product_id: int
+    rating: int
+    feedback: str
+
+class ProductFeedbackResponse(BaseModel):
+    id: int
+    product_id: int
+    customer_id: int
+    feedback: str
+    rating: int
+    created_at: datetime
 
     class Config:
         from_attributes = True

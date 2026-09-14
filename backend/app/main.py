@@ -15,6 +15,8 @@ from app.routers.orders import router as orders_router
 from app.routers.orderItems import router as ori_router
 from app.routers.cart import router as carts_router
 from app.routers.favorites import router as favorites_router
+from app.routers.feedback import router as feedbacks_router
+
 
 Base.metadata.create_all(
     bind=engine
@@ -50,7 +52,7 @@ app.include_router(ori_router)
 app.include_router(orders_router)
 app.include_router(carts_router)
 app.include_router(favorites_router)
-
+app.include_router(feedbacks_router)
 
 # для аватарок
 app.mount("/avatars", StaticFiles(directory="avatars"), name="avatars")

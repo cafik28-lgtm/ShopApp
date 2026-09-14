@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User
+from app.models import User, Admin, Product
 from app.schemas import UserCreate, UserUpdate, UserResponse, UserLogin
 from  ..utils.password import hash_password
 from  ..utils.admin import get_current_admin
@@ -158,6 +158,8 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin=Depends(get_c
         )
 
     try:
+        db.query(Product).filter(Product.seller_id == user_id).delete()
+        
         db.delete(db_user)
         db.commit()
 

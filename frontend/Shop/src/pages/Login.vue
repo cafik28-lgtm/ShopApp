@@ -1,4 +1,4 @@
-<script setup> 
+<script setup>
 import { ref } from 'vue';
 import { loginAdmin } from '../services/admin_api';
 import { loginUser } from '../services/user_api';
@@ -106,11 +106,13 @@ async function handleLogin() {
     background: white;
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
 }
 
 .login-card h1 {
     text-align: center;
     margin-bottom: 30px;
+    color: #212529;
 }
 
 .input-group {
@@ -120,6 +122,7 @@ async function handleLogin() {
 .input-group label {
     display: block;
     margin-bottom: 7px;
+    color: #333;
 }
 
 .input-group input {
@@ -128,6 +131,8 @@ async function handleLogin() {
     border: 1px solid #ccc;
     border-radius: 8px;
     box-sizing: border-box;
+    font-size: 15px;
+    background: #fafafa;
 }
 
 .login-button {
@@ -140,6 +145,7 @@ async function handleLogin() {
     color: white;
     cursor: pointer;
     font-size: 16px;
+    transition: background 0.2s;
 }
 
 .login-button:hover {
@@ -155,7 +161,11 @@ async function handleLogin() {
 .back-link {
     color: #212529;
     text-decoration: none;
-    margin-right: 10px;
+    font-size: 14px;
+}
+
+.back-link:hover {
+    text-decoration: underline;
 }
 
 .error {

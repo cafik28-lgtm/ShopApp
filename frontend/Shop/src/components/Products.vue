@@ -37,12 +37,12 @@ onMounted(fetchProducts);
         <div class="header-product">
             <h1>Products</h1>
             <button class="details-button" 
-                        v-if="user" 
-                        type="button" 
-                        @click="addProduct"
-                >
-                    Add product
-                </button>
+                    v-if="user" 
+                    type="button" 
+                    @click="addProduct"
+            >
+                Add product
+            </button>
         </div>
         
 
@@ -73,6 +73,15 @@ onMounted(fetchProducts);
 
                 <div class="product-info">
                     <h2>{{ p.name }} |  {{ p.cost }}$</h2>
+
+                    <!-- Блок со средним рейтингом и количеством отзывов -->
+                    <div class="product-rating" v-if="p.reviews_count > 0">
+                        <span class="stars">⭐ {{ p.average_rating }}</span>
+                        <span class="reviews-count">({{ p.reviews_count }})</span>
+                    </div>
+                    <div class="product-rating no-reviews" v-else>
+                        <span>No reviews</span>
+                    </div>
 
                     <router-link :to="`/products/${p.id}`" class="details-button">
                         View details
@@ -152,9 +161,34 @@ onMounted(fetchProducts);
 }
 
 .product-info h2 {
-    margin: 0 0 10px;
+    margin: 0 0 8px;
     font-size: 21px;
     color: #212529;
+}
+
+/* Стили для блока рейтинга в карточке */
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.stars {
+    font-weight: 600;
+    color: #212529;
+}
+
+.reviews-count {
+    color: #777;
+}
+
+.no-reviews {
+    color: #999;
+    font-style: italic;
+    font-size: 13px;
+    margin-bottom: 12px;
 }
 
 .product-price {
@@ -197,8 +231,8 @@ onMounted(fetchProducts);
 .header-product {
     display: flex;
     align-items: center;
-    
 }
+
 @media (max-width: 900px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);

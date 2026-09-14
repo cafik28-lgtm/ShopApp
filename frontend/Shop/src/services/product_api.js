@@ -87,3 +87,27 @@ export async function updateProduct(productId, data) {
 
     return response;
 }
+
+export async function deleteProduct(productId) {
+    const admin = JSON.parse(localStorage.getItem('admin'));
+    const user = JSON.parse(localStorage.getItem('user'));
+    
+    const headers = {};
+    if (admin) {
+        headers['email'] = admin.email;
+        headers['password'] = admin.password;
+    } else if (user) {
+        headers['email'] = user.email;
+        headers['password'] = user.password;
+    }
+
+    const response = await fetch(
+        `${API_URL}/products/${productId}`,
+        {
+            method: 'DELETE',
+            headers: headers
+        }
+    );
+
+    return response;
+}

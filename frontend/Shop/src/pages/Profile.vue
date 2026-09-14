@@ -1,10 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { getUser, uploadAvatar, updateUser } from '../services/user_api';
-import { useRoute } from 'vue-router';
+import { getUser, uploadAvatar, updateUser, deleteUser } from '../services/user_api';
+import { useRoute, useRouter } from 'vue-router';
 import { getProducts } from '../services/product_api';
 
 const route = useRoute();
+const router = useRouter();
 const products = ref([]);
 
 const email = ref('');
@@ -17,6 +18,7 @@ const city = ref('');
 const country = ref('');
 const isOwnProfile = ref(false);
 
+const admin = JSON.parse(localStorage.getItem('admin'));
 const error = ref('');
 
 async function getProfile() {
@@ -125,10 +127,27 @@ async function handleUpdate() {
     }
 }
 
+async function handleDeleteUserByAdmin() {
+    if (!confirm('Ви впевнені, що хочете видалити цього користувача?')) return;
+    error.value = '';
+    try {
+        const userId = route.params.userId;
+        const response = await deleteUser(userId);
+        
+        if (response.ok) {
+            router.push('/');
+        } else {
+            const data = await response.json().catch(() => ({}));
+            error.value = data.detail || 'Помилка видалення користувача';
+        }
+    } catch (err) {
+        router.push('/');
+    }
+}
+
 onMounted(getProfile);
 onMounted(fetchSellerProducts);
 </script>
-
 
 <template>
     <div class="profile-page">
@@ -246,12 +265,22 @@ onMounted(fetchSellerProducts);
 
                     <div>
                         <button
-                        v-if="isOwnProfile"
-                        class="save-button"
-                        type="submit"
-                        style="margin-right: 15px;"
+                            v-if="isOwnProfile"
+                            class="save-button"
+                            type="submit"
+                            style="margin-right: 15px;"
                         >
                             Save changes
+                        </button>
+
+                        <button
+                            v-if="admin"
+                            class="save-button"
+                            type="button"
+                            style="background: #dc3545;"
+                            @click="handleDeleteUserByAdmin"
+                        >
+                            Delete User (Admin)
                         </button>
                     </div>
                    

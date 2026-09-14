@@ -83,3 +83,20 @@ export async function updateUser(userId, data) {
 
     return response;
 }
+
+export async function deleteUser(userId) {
+    const admin = JSON.parse(localStorage.getItem('admin'));
+
+    const response = await fetch(
+        `${API_URL}/users/${userId}`,
+        {
+            method: 'DELETE',
+            headers: {
+                'email': admin?.email || '',
+                'password': admin?.password || ''
+            }
+        }
+    );
+
+    return response;
+}
