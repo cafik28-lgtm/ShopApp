@@ -5,6 +5,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { getUser } from '../services/user_api';
 import { getCategorie } from '../services/category_api';
 import { getProductFeedbacks, createFeedback, deleteFeedback } from '../services/feedback_api';
+import { getFavorites, addFavorites, deleteFavorite } from '../services/favorites_api';
+
+import notLiked from '../assets/favorites/notliked.png';
+import liked from '../assets/favorites/liked.png';
 
 const route = useRoute();
 const router = useRouter();
@@ -14,6 +18,7 @@ const error = ref('');
 const seller = ref(null);
 const category = ref(null);
 const feedbacks = ref([]);
+const isFavorite = ref(false);
 
 const newRating = ref(5);
 const newFeedbackText = ref('');
@@ -122,9 +127,55 @@ async function handleDeleteFeedback(feedbackId) {
     }
 }
 
+async function checkFavorite() {
+    if(!currentUser) return;
+
+    try{
+        const response = await getFavorites();
+
+        if(response.ok) {
+            const data = await response.json();
+
+            for(const favorite of data.items){
+                if(favorite.product_id === Number(productId)) {
+                    isFavorite.value = true;
+                    break;
+                }
+            }
+        }
+    } catch(err){
+        console.error('Failed to check favorite');
+    }
+}
+
+
+async function clickFavorite() {
+    if(!currentUser) return;
+
+    try{
+        if(isFavorite.value){
+            const response = await deleteFavorite(productId);
+
+            if(response.ok){
+                isFavorite.value = false;
+            } 
+        }
+        else {
+            const response = await addFavorites(productId);
+            
+            if(response.ok){
+                isFavorite.value = true;
+            }
+        }
+    } catch(err){
+        console.error('Favorite error');
+    }
+}
+
 onMounted(() => {
     fetchProduct();
     fetchFeedbacks();
+    checkFavorite();
 });
 </script>
 
@@ -151,8 +202,25 @@ onMounted(() => {
                 </div>
 
                 <div class="product-info">
+                    <div class="title-row">
 
-                    <h1>{{ product.name }} | {{ product.cost }}$</h1>
+                        <h1>{{ product.name }} | {{ product.cost }}$</h1>
+
+                        <button class="favorite-button"
+                        v-if="currentUser"
+                        @click="clickFavorite">
+                            <img
+                                v-if="isFavorite"
+                                :src="liked"
+                                alt="Liked"
+                            />
+                            <img 
+                                v-else="isFavorite"
+                                :src="notLiked"
+                                alt="Not liked"
+                            />
+                        </button>
+                    </div>
 
                     <!-- Блок со средним рейтингом -->
                     <div class="product-rating" v-if="product.reviews_count > 0">
@@ -517,6 +585,24 @@ onMounted(() => {
     font-size: 16px;
     cursor: pointer;
     align-self: flex-start;
+}
+
+.title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.favorite-button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.favorite-button img {
+    width: 40px;
+    height: 40px;
 }
 
 @media (max-width: 700px) {
