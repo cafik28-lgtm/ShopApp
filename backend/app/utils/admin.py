@@ -18,23 +18,6 @@ def create_default_admin(db: Session):
         db.add(admin)
         db.commit()
 
-# def get_current_admin(email: str, password: str, db: Session = Depends(get_db)):
-#     admin = db.query(Admin).filter(Admin.email == email).first()
-
-#     if not admin:
-#         raise HTTPException(
-#             status_code=403,
-#             detail="Admin access required"
-#         )
-
-#     if not verify_password(password, admin.hashed_password):
-#         raise HTTPException(
-#             status_code=401,
-#             detail="Invalid email or password"
-#         )
-
-#     return admin
-
 def get_current_admin(
     email: str = Header(...),
     password: str = Header(...),

@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { getUser, uploadAvatar, updateUser, deleteUser } from '../services/user_api';
 import { useRoute, useRouter } from 'vue-router';
 import { getProducts } from '../services/product_api';
+import { getFavorites } from '../services/favorites_api';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,6 +18,8 @@ const avatarFile = ref(null);
 const city = ref('');
 const country = ref('');
 const isOwnProfile = ref(false);
+
+const favoriteProducts = ref([]);
 
 const admin = JSON.parse(localStorage.getItem('admin'));
 const error = ref('');
@@ -145,8 +148,27 @@ async function handleDeleteUserByAdmin() {
     }
 }
 
+async function getFavoritesProducts() {
+    if (!isOwnProfile.value) return;
+
+    try {
+        const response = await getFavorites();
+
+        if (response.ok) {
+            const data = await response.json();
+            favoriteProducts.value = data.items;
+        } else {
+            const data = await response.json();
+            error.value = data.detail || 'Error getting favorite products';
+        }
+    } catch (err) {
+        error.value = 'Server connection error';
+    }
+}
+
 onMounted(getProfile);
 onMounted(fetchSellerProducts);
+onMounted(getFavoritesProducts);
 </script>
 
 <template>
@@ -291,7 +313,8 @@ onMounted(fetchSellerProducts);
                 </div>
             </form>
             <div class="seller-products">
-                <h2>Products</h2>
+                <h2>Seller products</h2>
+
                 <div v-if="products.length" class="products-grid">
                     <div
                         v-for="p in products"
@@ -309,11 +332,14 @@ onMounted(fetchSellerProducts);
                                 No photo
                             </div>
                         </div>
+
                         <div class="product-info">
                             <h3>{{ p.name }}</h3>
+
                             <p class="product-price">
                                 {{ p.cost }}$
                             </p>
+
                             <router-link
                                 :to="`/products/${p.id}`"
                                 class="details-button"
@@ -323,7 +349,50 @@ onMounted(fetchSellerProducts);
                         </div>
                     </div>
                 </div>
+
                 <p v-else class="no-products">
+                    This user has no products.
+                </p>
+            </div>
+            <div v-if="isOwnProfile" class="seller-products">
+                <h2>Favorites</h2>
+
+                <div v-if="favoriteProducts.length" class="products-grid">
+                    <div
+                        v-for="p in favoriteProducts"
+                        :key="p.product_id"
+                        class="product-card"
+                    >
+                        <div class="product-image">
+                            <img
+                                v-if="p.photo"
+                                :src="`http://127.0.0.1:8000/${p.photo}`"
+                                alt="product"
+                            />
+                            <div v-else class="no-photo">
+                                No photo
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <h3>{{ p.name }}</h3>
+
+                            <p class="product-price">
+                                {{ p.price }}$
+                            </p>
+
+                            <router-link
+                                :to="`/products/${p.product_id}`"
+                                class="details-button"
+                            >
+                                View details
+                            </router-link>
+                        </div>
+                    </div>
+                </div>
+
+                <p v-else class="no-products">
+                    You have no favorite products.
                 </p>
             </div>
         </div>

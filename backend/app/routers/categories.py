@@ -38,23 +38,6 @@ def create_category(cat: CategoryCreate, db: Session = Depends(get_db), current_
         db.rollback()
         raise HTTPException(status_code=400, detail=str(err))
 
-@router.put('/{category_id}', response_model=CategoryResponse)
-def update_category(category_id: int, cat: CategoryUpdate, db: Session = Depends(get_db), current_admin = Depends(get_current_admin)):
-    db_cat = db.query(Category).filter(Category.id == category_id).first()
-    if not db_cat:
-        raise HTTPException(status_code=404, detail="Category not found")
-    try:
-        if cat.name is not None:
-            db_cat.name = cat.name
-        if cat.description is not None:
-            db_cat.description = cat.description
-        db.commit()
-        db.refresh(db_cat)
-        return db_cat
-    except Exception as err:
-        db.rollback()
-        raise HTTPException(status_code=404, detail=str(err))
-
 @router.delete('/{category_id}')
 def delete_category(category_id: int, db: Session = Depends(get_db), current_admin = Depends(get_current_admin)):
     db_cat = db.query(Category).filter(Category.id == category_id).first()

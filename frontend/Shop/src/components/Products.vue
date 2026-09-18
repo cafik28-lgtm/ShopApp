@@ -1,9 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { getProducts } from '../services/product_api';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
+import { getCategories } from '../services/category_api';
 
+const allProducts = ref([]);
 const products = ref([]);
+const categories = ref([]);
+const selected = ref('');
+
 const error = ref('');
 
 const router = useRouter();
@@ -15,7 +20,8 @@ async function fetchProducts() {
         const response = await getProducts();
 
         if (response.ok) {
-            products.value = await response.json();
+            allProducts.value = await response.json();
+            products.value = allProducts.value;
         } else {
             const data = await response.json();
             error.value = data.detail || 'Помилка отримання товарів';
@@ -29,23 +35,62 @@ async function addProduct() {
     router.push(`/products/seller=${user.user_id}/create`);
 }
 
+
+async function fetchCategories() {
+    try {
+        const response = await getCategories();
+        if (response.ok) {
+            categories.value = await response.json();
+        }
+    } catch (err) {
+        console.error('Помилка завантаження категорій', 'error');
+    }
+}
+
+async function filterProductsByCategory() {
+    if(selected.value === '') {
+        products.value = allProducts.value;
+        return;
+    }
+
+    try {
+        products.value = [];
+        for(const p of allProducts.value) {
+            if(p.category_id === Number(selected.value)) {
+                products.value.push(p);
+            }
+        }
+    } catch (err) {
+        error.value = 'Помилка підключення до сервера';
+    }
+}
+
+
 onMounted(fetchProducts);
+onMounted(fetchCategories);
 </script>
 
 <template>
     <div class="products-page">
         <div class="header-product">
-            <h1>Products</h1>
-            <button class="details-button" 
-                    v-if="user" 
-                    type="button" 
-                    @click="addProduct"
-            >
-                Add product
-            </button>
-        </div>
-        
+            <div class="">
+                <h1>Products</h1>
+                <button class="details-button" 
+                        v-if="user" 
+                        type="button" 
+                        @click="addProduct"
+                >
+                    Add product
+                </button>  
+            </div>
+            <select v-model="selected" @change="filterProductsByCategory">
+                <option value="">All categories</option>
+                <option v-for="c in categories" :key="c.id" :value="c.id">
+                    {{ c.name }}
+                </option>
+            </select>
 
+        </div>
         <p v-if="error" class="error">
             {{ error }}
         </p>
@@ -74,7 +119,6 @@ onMounted(fetchProducts);
                 <div class="product-info">
                     <h2>{{ p.name }} |  {{ p.cost }}$</h2>
 
-                    <!-- Блок со средним рейтингом и количеством отзывов -->
                     <div class="product-rating" v-if="p.reviews_count > 0">
                         <span class="stars">⭐ {{ p.average_rating }}</span>
                         <span class="reviews-count">({{ p.reviews_count }})</span>
