@@ -9,7 +9,7 @@ export async function getFavorites() {
             method: 'GET',
             headers: {
                 email: user.email,
-                password: user.password
+                password: user.password 
             }
         }
     );

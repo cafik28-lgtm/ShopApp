@@ -1,16 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { getProducts } from '../services/product_api';
-import { getFavorites, addFavorites, deleteFavorite } from '../services/favorites_api';
-import { addToCart } from '../services/cart_api';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
+import { getCategories } from '../services/category_api';
 
-// Импортируем наши картинки
-import likedImg from '../assets/favorites/liked.png';
-import notLikedImg from '../assets/favorites/notliked.png';
-
+const allProducts = ref([]);
 const products = ref([]);
-const favoriteIds = ref(new Set());
 const error = ref('');
 
 const router = useRouter();
@@ -20,8 +15,8 @@ async function fetchProductsAndFavorites() {
     try {
         const resProducts = await getProducts();
 
-        if (resProducts.ok) {
-            products.value = await resProducts.json();
+        if (response.ok) {
+            products.value = await response.json();
         } else {
             const data = await resProducts.json();
             error.value = data.detail || 'Помилка отримання товарів';
@@ -84,26 +79,54 @@ async function addProduct() {
     router.push(`/products/seller=${user.user_id}/create`);
 }
 
-onMounted(fetchProductsAndFavorites);
+
+async function fetchCategories() {
+    try {
+        const response = await getCategories();
+        if (response.ok) {
+            categories.value = await response.json();
+        }
+    } catch (err) {
+        console.error('Помилка завантаження категорій', 'error');
+    }
+}
+
+async function filterProductsByCategory() {
+    if(selected.value === '') {
+        products.value = allProducts.value;
+        return;
+    }
+
+    try {
+        products.value = [];
+        for(const p of allProducts.value) {
+            if(p.category_id === Number(selected.value)) {
+                products.value.push(p);
+            }
+        }
+    } catch (err) {
+        error.value = 'Помилка підключення до сервера';
+    }
+}
+
+
+onMounted(fetchProducts);
 </script>
 
 <template>
     <div class="products-page">
         <div class="header-product">
             <h1>Products</h1>
-            <div class="header-actions">
-                <router-link v-if="user" to="/favorites" class="fav-page-link">⭐ Моє обране</router-link>
-                <router-link v-if="user" to="/cart" class="fav-page-link">🛒 Кошик</router-link>
-                <button class="details-button" 
-                        v-if="user" 
-                        type="button" 
-                        @click="addProduct"
-                >
-                    Add product
-                </button>
-            </div>
+            <button class="details-button" 
+                    v-if="user" 
+                    type="button" 
+                    @click="addProduct"
+            >
+                Add product
+            </button>
         </div>
         
+
         <p v-if="error" class="error">
             {{ error }}
         </p>
