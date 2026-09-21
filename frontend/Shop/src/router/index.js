@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
 import Profile from '../pages/Profile.vue';
+import Cart from '../pages/Cart.vue';
+import Favorites from '../components/Favorites.vue';
 import AdminCategories from '../components/AdminCategories.vue';
 import Products from '../components/Products.vue';
 import Product from '../components/Product.vue';
@@ -24,6 +26,14 @@ const router = createRouter({
         {
             path: '/user/profile/:userId',
             component: Profile 
+        },
+        {
+            path: '/cart',
+            component: Cart
+        },
+        {
+            path: '/favorites',
+            component: Favorites
         },
         {
             path: '/admin/categories',

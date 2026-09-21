@@ -1,27 +1,82 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { getProducts } from '../services/product_api';
+import { getFavorites, addFavorites, deleteFavorite } from '../services/favorites_api';
+import { addToCart } from '../services/cart_api';
 import { useRoute, useRouter } from 'vue-router';
 
+// Импортируем наши картинки
+import likedImg from '../assets/favorites/liked.png';
+import notLikedImg from '../assets/favorites/notliked.png';
+
 const products = ref([]);
+const favoriteIds = ref(new Set());
 const error = ref('');
 
 const router = useRouter();
-
 const user = JSON.parse(localStorage.getItem('user'));
 
-async function fetchProducts() {
+async function fetchProductsAndFavorites() {
     try {
-        const response = await getProducts();
+        const resProducts = await getProducts();
 
-        if (response.ok) {
-            products.value = await response.json();
+        if (resProducts.ok) {
+            products.value = await resProducts.json();
         } else {
-            const data = await response.json();
+            const data = await resProducts.json();
             error.value = data.detail || 'Помилка отримання товарів';
+        }
+
+        if (user) {
+            const resFavs = await getFavorites();
+            if (resFavs.ok) {
+                const data = await resFavs.json();
+                favoriteIds.value = new Set(data.items.map(item => item.product_id));
+            }
         }
     } catch (err) {
         error.value = 'Помилка підключення до сервера';
+    }
+}
+
+async function toggleFavorite(productId) {
+    if (!user) {
+        router.push('/login');
+        return;
+    }
+
+    try {
+        if (favoriteIds.value.has(productId)) {
+            const response = await deleteFavorite(productId);
+            if (response.ok) {
+                favoriteIds.value.delete(productId);
+            }
+        } else {
+            const response = await addFavorites(productId);
+            if (response.ok) {
+                favoriteIds.value.add(productId);
+            }
+        }
+    } catch (err) {
+        console.error('Error toggling favorite', err);
+    }
+}
+
+async function handleAddToCart(productId) {
+    if (!user) {
+        router.push('/login');
+        return;
+    }
+    try {
+        const response = await addToCart(productId, 1);
+        if (response.ok) {
+            alert('Товар додано до кошика!');
+        } else {
+            const data = await response.json();
+            alert(data.detail || 'Помилка додавання');
+        }
+    } catch (err) {
+        console.error('Error adding to cart', err);
     }
 }
 
@@ -29,52 +84,64 @@ async function addProduct() {
     router.push(`/products/seller=${user.user_id}/create`);
 }
 
-onMounted(fetchProducts);
+onMounted(fetchProductsAndFavorites);
 </script>
 
 <template>
     <div class="products-page">
         <div class="header-product">
             <h1>Products</h1>
-            <button class="details-button" 
-                    v-if="user" 
-                    type="button" 
-                    @click="addProduct"
-            >
-                Add product
-            </button>
+            <div class="header-actions">
+                <router-link v-if="user" to="/favorites" class="fav-page-link">⭐ Моє обране</router-link>
+                <router-link v-if="user" to="/cart" class="fav-page-link">🛒 Кошик</router-link>
+                <button class="details-button" 
+                        v-if="user" 
+                        type="button" 
+                        @click="addProduct"
+                >
+                    Add product
+                </button>
+            </div>
         </div>
         
-
         <p v-if="error" class="error">
             {{ error }}
         </p>
 
         <div v-else class="products-grid">
-
             <div
                 v-for="p in products"
                 :key="p.id"
                 class="product-card"
                 :class="p.in_stock ? 'in-stock' : 'out-of-stock'"
             >
-
                 <div class="product-image">
                     <img
                         v-if="p.photo"
                         :src="`http://127.0.0.1:8000/${p.photo}`"
                         alt="product"
                     />
-
                     <div v-else class="no-photo">
                         No photo
                     </div>
+                    
+                    <button 
+                        class="favorite-btn" 
+                        @click.stop="toggleFavorite(p.id)"
+                        :title="favoriteIds.has(p.id) ? 'Видалити з обраного' : 'Додати в обране'"
+                    >
+                        <!-- Заменили эмодзи на тег img с динамическим src -->
+                        <img 
+                            :src="favoriteIds.has(p.id) ? likedImg : notLikedImg" 
+                            class="fav-icon" 
+                            alt="favorite" 
+                        />
+                    </button>
                 </div>
 
                 <div class="product-info">
                     <h2>{{ p.name }} |  {{ p.cost }}$</h2>
 
-                    <!-- Блок со средним рейтингом и количеством отзывов -->
                     <div class="product-rating" v-if="p.reviews_count > 0">
                         <span class="stars">⭐ {{ p.average_rating }}</span>
                         <span class="reviews-count">({{ p.reviews_count }})</span>
@@ -86,12 +153,13 @@ onMounted(fetchProducts);
                     <router-link :to="`/products/${p.id}`" class="details-button">
                         View details
                     </router-link>
+                    
+                    <button v-if="user" class="details-button add-cart-btn" @click.stop="handleAddToCart(p.id)">
+                        🛒 В кошик
+                    </button>
                 </div>
-
             </div>
-
         </div>
-
     </div>
 </template>
 
@@ -101,9 +169,37 @@ onMounted(fetchProducts);
     box-sizing: border-box;
 }
 
-.products-page h1 {
+.header-product {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 30px;
+}
+
+.header-product h1 {
+    margin: 0;
     color: #212529;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.fav-page-link {
+    font-size: 16px;
+    font-weight: 600;
+    color: #212529;
+    text-decoration: none;
+    padding: 10px 15px;
+    background: #e9ecef;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.fav-page-link:hover {
+    background: #dee2e6;
 }
 
 .products-grid {
@@ -138,6 +234,7 @@ onMounted(fetchProducts);
     width: 100%;
     height: 230px;
     background: #f1f1f1;
+    position: relative;
 }
 
 .product-image img {
@@ -145,6 +242,50 @@ onMounted(fetchProducts);
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+/* Обновленные стили для кнопки избранного */
+.favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0; /* Убрали стандартные отступы */
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.1s;
+}
+
+.favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.1s;
+    overflow: hidden;
+}
+
+.favorite-btn img.fav-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
 }
 
 .no-photo {
@@ -166,7 +307,6 @@ onMounted(fetchProducts);
     color: #212529;
 }
 
-/* Стили для блока рейтинга в карточке */
 .product-rating {
     display: flex;
     align-items: center;
@@ -217,20 +357,24 @@ onMounted(fetchProducts);
     background: #343a40;
 }
 
+.add-cart-btn {
+    margin-top: 10px;
+    background: #28a745; 
+}
+
+.add-cart-btn:hover {
+    background: #218838;
+}
+
 .error {
     color: #dc3545;
 }
 
 .header-product .details-button {
-    width: 15vw;
-    font-size: 32px;
-    margin-bottom: 18px;
-    margin-left: 15px;
-}
-
-.header-product {
-    display: flex;
-    align-items: center;
+    width: auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 0;
 }
 
 @media (max-width: 900px) {

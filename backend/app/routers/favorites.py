@@ -103,10 +103,7 @@ def get_favorites(
                     .all()
     
     if not db_favorite:
-        raise HTTPException(
-            status_code=403, 
-            detail="Favorites don't found"
-        )
+        return {"user_id": current_user.id, "items": []}
 
     result = []
     for f in db_favorite:
@@ -114,20 +111,22 @@ def get_favorites(
             .filter(Product.id == f.product_id) \
             .first()
 
-        result.append({
-            "user_id": current_user.id,
-            "user_name": current_user.first_name + " " + current_user.last_name,
-            "product_id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "photo": product.photo,
-            "price": product.cost,
-        })
+        if product:
+            fname = current_user.first_name or ""
+            lname = current_user.last_name or ""
+            user_name = f"{fname} {lname}".strip() or "User"
+
+            result.append({
+                "user_id": current_user.id,
+                "user_name": user_name,
+                "product_id": product.id,
+                "name": product.name,
+                "description": product.description,
+                "photo": product.photo,
+                "price": product.cost,
+            })
 
     return {
         "user_id": current_user.id,
         "items": result
     }
-    
-   
-    
