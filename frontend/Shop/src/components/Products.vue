@@ -1,11 +1,20 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { getProducts } from '../services/product_api';
-import { useRouter } from 'vue-router';
 import { getCategories } from '../services/category_api';
+import { getFavorites, addFavorites, deleteFavorite } from '../services/favorites_api';
+import { addToCart } from '../services/cart_api';
+import { useRouter } from 'vue-router';
+
+// Картинки для избранного
+import likedImg from '../assets/favorites/liked.png';
+import notLikedImg from '../assets/favorites/notliked.png';
 
 const allProducts = ref([]);
 const products = ref([]);
+const categories = ref([]);
+const selected = ref('');
+const favoriteIds = ref(new Set());
 const error = ref('');
 
 const router = useRouter();
@@ -13,12 +22,13 @@ const user = JSON.parse(localStorage.getItem('user'));
 
 async function fetchProductsAndFavorites() {
     try {
-        const resProducts = await getProducts();
+        const response = await getProducts();
 
         if (response.ok) {
-            products.value = await response.json();
+            allProducts.value = await response.json();
+            products.value = allProducts.value;
         } else {
-            const data = await resProducts.json();
+            const data = await response.json();
             error.value = data.detail || 'Помилка отримання товарів';
         }
 
@@ -27,6 +37,35 @@ async function fetchProductsAndFavorites() {
             if (resFavs.ok) {
                 const data = await resFavs.json();
                 favoriteIds.value = new Set(data.items.map(item => item.product_id));
+            }
+        }
+    } catch (err) {
+        error.value = 'Помилка підключення до сервера';
+    }
+}
+
+async function fetchCategories() {
+    try {
+        const response = await getCategories();
+        if (response.ok) {
+            categories.value = await response.json();
+        }
+    } catch (err) {
+        console.error('Помилка завантаження категорій', 'error');
+    }
+}
+
+async function filterProductsByCategory() {
+    if (selected.value === '') {
+        products.value = allProducts.value;
+        return;
+    }
+
+    try {
+        products.value = [];
+        for (const p of allProducts.value) {
+            if (p.category_id === Number(selected.value)) {
+                products.value.push(p);
             }
         }
     } catch (err) {
@@ -79,53 +118,35 @@ async function addProduct() {
     router.push(`/products/seller=${user.user_id}/create`);
 }
 
-
-async function fetchCategories() {
-    try {
-        const response = await getCategories();
-        if (response.ok) {
-            categories.value = await response.json();
-        }
-    } catch (err) {
-        console.error('Помилка завантаження категорій', 'error');
-    }
-}
-
-async function filterProductsByCategory() {
-    if(selected.value === '') {
-        products.value = allProducts.value;
-        return;
-    }
-
-    try {
-        products.value = [];
-        for(const p of allProducts.value) {
-            if(p.category_id === Number(selected.value)) {
-                products.value.push(p);
-            }
-        }
-    } catch (err) {
-        error.value = 'Помилка підключення до сервера';
-    }
-}
-
-
-onMounted(fetchProducts);
+onMounted(fetchProductsAndFavorites);
+onMounted(fetchCategories);
 </script>
 
 <template>
     <div class="products-page">
         <div class="header-product">
             <h1>Products</h1>
-            <button class="details-button" 
-                    v-if="user" 
-                    type="button" 
-                    @click="addProduct"
-            >
-                Add product
-            </button>
+            
+            <div class="header-actions">
+                <router-link v-if="user" to="/favorites" class="fav-page-link">⭐ Моє обране</router-link>
+                <router-link v-if="user" to="/cart" class="fav-page-link">🛒 Кошик</router-link>
+                
+                <select class="category-select" v-model="selected" @change="filterProductsByCategory">
+                    <option value="">All categories</option>
+                    <option v-for="c in categories" :key="c.id" :value="c.id">
+                        {{ c.name }}
+                    </option>
+                </select>
+
+                <button class="details-button add-product-btn" 
+                        v-if="user" 
+                        type="button" 
+                        @click="addProduct"
+                >
+                    Add product
+                </button>  
+            </div>
         </div>
-        
 
         <p v-if="error" class="error">
             {{ error }}
@@ -144,16 +165,16 @@ onMounted(fetchProducts);
                         :src="`http://127.0.0.1:8000/${p.photo}`"
                         alt="product"
                     />
+
                     <div v-else class="no-photo">
                         No photo
                     </div>
-                    
+
                     <button 
                         class="favorite-btn" 
                         @click.stop="toggleFavorite(p.id)"
                         :title="favoriteIds.has(p.id) ? 'Видалити з обраного' : 'Додати в обране'"
                     >
-                        <!-- Заменили эмодзи на тег img с динамическим src -->
                         <img 
                             :src="favoriteIds.has(p.id) ? likedImg : notLikedImg" 
                             class="fav-icon" 
@@ -176,7 +197,7 @@ onMounted(fetchProducts);
                     <router-link :to="`/products/${p.id}`" class="details-button">
                         View details
                     </router-link>
-                    
+
                     <button v-if="user" class="details-button add-cart-btn" @click.stop="handleAddToCart(p.id)">
                         🛒 В кошик
                     </button>
@@ -197,9 +218,11 @@ onMounted(fetchProducts);
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
-.header-product h1 {
+.products-page h1 {
     margin: 0;
     color: #212529;
 }
@@ -208,6 +231,14 @@ onMounted(fetchProducts);
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+.category-select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid #212529;
+    font-size: 16px;
+    cursor: pointer;
 }
 
 .fav-page-link {
@@ -223,6 +254,13 @@ onMounted(fetchProducts);
 
 .fav-page-link:hover {
     background: #dee2e6;
+}
+
+.header-product .add-product-btn {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 0;
 }
 
 .products-grid {
@@ -267,23 +305,13 @@ onMounted(fetchProducts);
     display: block;
 }
 
-/* Обновленные стили для кнопки избранного */
-.favorite-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
+.no-photo {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0; /* Убрали стандартные отступы */
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: transform 0.1s;
+    color: #777;
 }
 
 .favorite-btn {
@@ -305,19 +333,14 @@ onMounted(fetchProducts);
     overflow: hidden;
 }
 
+.favorite-btn:hover {
+    transform: scale(1.1);
+}
+
 .favorite-btn img.fav-icon {
     width: 16px;
     height: 16px;
     object-fit: contain;
-}
-
-.no-photo {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #777;
 }
 
 .product-info {
@@ -393,13 +416,6 @@ onMounted(fetchProducts);
     color: #dc3545;
 }
 
-.header-product .details-button {
-    width: auto;
-    padding: 10px 20px;
-    font-size: 16px;
-    margin: 0;
-}
-
 @media (max-width: 900px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -410,7 +426,6 @@ onMounted(fetchProducts);
     .products-grid {
         grid-template-columns: 1fr;
     }
-
     .products-page {
         padding: 20px;
     }
