@@ -17,12 +17,8 @@ const selected = ref('');
 const favoriteIds = ref(new Set());
 const error = ref('');
 
-const favoriteIds = ref(new Set());
-
 const router = useRouter();
-
 const user = JSON.parse(localStorage.getItem('user'));
-
 
 async function fetchProductsAndFavorites() {
     try {
@@ -38,17 +34,12 @@ async function fetchProductsAndFavorites() {
 
         if (user) {
             const resFavs = await getFavorites();
-
             if (resFavs.ok) {
                 const data = await resFavs.json();
-
-                favoriteIds.value = new Set(
-                    data.items.map(item => item.product_id)
-                );
+                favoriteIds.value = new Set(data.items.map(item => item.product_id));
             }
         }
     } catch (err) {
-        console.error(err);
         error.value = 'Помилка підключення до сервера';
     }
 }
@@ -91,21 +82,13 @@ async function toggleFavorite(productId) {
     try {
         if (favoriteIds.value.has(productId)) {
             const response = await deleteFavorite(productId);
-
             if (response.ok) {
                 favoriteIds.value.delete(productId);
-
-                // Створюємо новий Set, щоб Vue точно побачив зміни
-                favoriteIds.value = new Set(favoriteIds.value);
             }
         } else {
             const response = await addFavorites(productId);
-
             if (response.ok) {
                 favoriteIds.value.add(productId);
-
-                // Створюємо новий Set, щоб Vue точно побачив зміни
-                favoriteIds.value = new Set(favoriteIds.value);
             }
         }
     } catch (err) {
@@ -113,28 +96,23 @@ async function toggleFavorite(productId) {
     }
 }
 
-
 async function handleAddToCart(productId) {
     if (!user) {
         router.push('/login');
         return;
     }
-
     try {
         const response = await addToCart(productId, 1);
-
         if (response.ok) {
             alert('Товар додано до кошика!');
         } else {
             const data = await response.json();
-
             alert(data.detail || 'Помилка додавання');
         }
     } catch (err) {
         console.error('Error adding to cart', err);
     }
 }
-
 
 async function addProduct() {
     router.push(`/products/seller=${user.user_id}/create`);
@@ -144,10 +122,8 @@ onMounted(fetchProductsAndFavorites);
 onMounted(fetchCategories);
 </script>
 
-
 <template>
     <div class="products-page">
-
         <div class="header-product">
             <h1>Products</h1>
             
@@ -176,18 +152,14 @@ onMounted(fetchCategories);
             {{ error }}
         </p>
 
-
         <div v-else class="products-grid">
-
             <div
                 v-for="p in products"
                 :key="p.id"
                 class="product-card"
                 :class="p.in_stock ? 'in-stock' : 'out-of-stock'"
             >
-
                 <div class="product-image">
-
                     <img
                         v-if="p.photo"
                         :src="`http://127.0.0.1:8000/${p.photo}`"
@@ -201,11 +173,7 @@ onMounted(fetchCategories);
                     <button 
                         class="favorite-btn" 
                         @click.stop="toggleFavorite(p.id)"
-                        :title="
-                            favoriteIds.has(p.id)
-                                ? 'Видалити з обраного'
-                                : 'Додати в обране'
-                        "
+                        :title="favoriteIds.has(p.id) ? 'Видалити з обраного' : 'Додати в обране'"
                     >
                         <img 
                             :src="favoriteIds.has(p.id) ? likedImg : notLikedImg" 
@@ -213,64 +181,33 @@ onMounted(fetchCategories);
                             alt="favorite" 
                         />
                     </button>
-
                 </div>
 
-
                 <div class="product-info">
+                    <h2>{{ p.name }} |  {{ p.cost }}$</h2>
 
-                    <h2>
-                        {{ p.name }} | {{ p.cost }}$
-                    </h2>
-
-
-                    <div
-                        class="product-rating"
-                        v-if="p.reviews_count > 0"
-                    >
-                        <span class="stars">
-                            ⭐ {{ p.average_rating }}
-                        </span>
-
-                        <span class="reviews-count">
-                            ({{ p.reviews_count }})
-                        </span>
+                    <div class="product-rating" v-if="p.reviews_count > 0">
+                        <span class="stars">⭐ {{ p.average_rating }}</span>
+                        <span class="reviews-count">({{ p.reviews_count }})</span>
+                    </div>
+                    <div class="product-rating no-reviews" v-else>
+                        <span>No reviews</span>
                     </div>
 
-
-                    <div
-                        class="product-rating no-reviews"
-                        v-else
-                    >
-                        <span>
-                            No reviews
-                        </span>
-                    </div>
-
-
-                    <router-link
-                        :to="`/products/${p.id}`"
-                        class="details-button"
-                    >
+                    <router-link :to="`/products/${p.id}`" class="details-button">
                         View details
                     </router-link>
 
                     <button v-if="user" class="details-button add-cart-btn" @click.stop="handleAddToCart(p.id)">
                         🛒 В кошик
                     </button>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
 </template>
 
-
 <style scoped>
-
 .products-page {
     padding: 30px 40px;
     box-sizing: border-box;
@@ -290,8 +227,10 @@ onMounted(fetchCategories);
     color: #212529;
 }
 
-.category-filter {
-    margin-bottom: 30px;
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 .category-select {
@@ -310,11 +249,12 @@ onMounted(fetchCategories);
     padding: 10px 15px;
     background: #e9ecef;
     border-radius: 8px;
-    background: white;
-    font-size: 15px;
-    cursor: pointer;
+    transition: background 0.2s;
 }
 
+.fav-page-link:hover {
+    background: #dee2e6;
+}
 
 .header-product .add-product-btn {
     width: auto;
@@ -328,7 +268,6 @@ onMounted(fetchCategories);
     grid-template-columns: repeat(3, 1fr);
     gap: 25px;
 }
-
 
 .product-card {
     overflow: hidden;
@@ -352,7 +291,6 @@ onMounted(fetchCategories);
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
-
 .product-image {
     width: 100%;
     height: 230px;
@@ -360,7 +298,7 @@ onMounted(fetchCategories);
     position: relative;
 }
 
-.product-image > img {
+.product-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -380,23 +318,17 @@ onMounted(fetchCategories);
     position: absolute;
     top: 10px;
     right: 10px;
-
     background: white;
     border: none;
     border-radius: 50%;
-
     width: 35px;
     height: 35px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     padding: 0;
     cursor: pointer;
-
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     transition: transform 0.1s;
     overflow: hidden;
 }
@@ -420,7 +352,6 @@ onMounted(fetchCategories);
     font-size: 21px;
     color: #212529;
 }
-
 
 .product-rating {
     display: flex;
@@ -446,23 +377,24 @@ onMounted(fetchCategories);
     margin-bottom: 12px;
 }
 
+.product-price {
+    margin: 0 0 18px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+}
 
 .details-button {
     display: block;
     width: 100%;
-
     padding: 10px;
-
     border: none;
     border-radius: 8px;
-
     background: #212529;
     color: white;
-
     font-size: 15px;
     text-align: center;
     text-decoration: none;
-
     cursor: pointer;
     box-sizing: border-box;
 }
@@ -471,16 +403,14 @@ onMounted(fetchCategories);
     background: #343a40;
 }
 
-
 .add-cart-btn {
     margin-top: 10px;
-    background: #28a745;
+    background: #28a745; 
 }
 
 .add-cart-btn:hover {
     background: #218838;
 }
-
 
 .error {
     color: #dc3545;
@@ -492,7 +422,6 @@ onMounted(fetchCategories);
     }
 }
 
-
 @media (max-width: 600px) {
     .products-grid {
         grid-template-columns: 1fr;
@@ -500,12 +429,5 @@ onMounted(fetchCategories);
     .products-page {
         padding: 20px;
     }
-
-    .header-product {
-        gap: 15px;
-        flex-direction: column;
-        align-items: stretch;
-    }
 }
-
 </style>
