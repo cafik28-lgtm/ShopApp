@@ -116,8 +116,71 @@ onMounted(fetchCategories);
 </template>
 
 <style scoped>
+.admin-categories-page {
+    --bg-main: #FFFFFF;
+    --text-main: #1F2937;
+    --accent-primary: #10B981;
+    --accent-hover: #059669;
+    --accent-danger: #EF4444;
+    --border-light: #E5E7EB;
+    
+    font-family: 'Inter', 'Montserrat', sans-serif;
+    color: var(--text-main);
+}
+
 .form-card, .list-container {
     max-width: 600px;
+}
+
+.card {
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03) !important;
+}
+
+.btn-dark {
+    background-color: var(--accent-primary) !important;
+    border-color: var(--accent-primary) !important;
+    border-radius: 10px;
+    padding: 12px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.btn-dark:hover:not(:disabled) {
+    background-color: var(--accent-hover) !important;
+    border-color: var(--accent-hover) !important;
+}
+
+.form-control {
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+    padding: 10px 14px;
+}
+
+.form-control:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.list-group-item {
+    border: 1px solid var(--border-light) !important;
+    margin-bottom: 8px;
+    border-radius: 10px !important;
+    padding: 14px 18px;
+}
+
+.btn-danger {
+    background-color: #EF4444;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 600;
+}
+
+.btn-danger:hover {
+    background-color: #DC2626;
 }
 
 .custom-toast {
@@ -128,6 +191,7 @@ onMounted(fetchCategories);
     z-index: 1050;
     min-width: 250px;
     text-align: center;
+    border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 

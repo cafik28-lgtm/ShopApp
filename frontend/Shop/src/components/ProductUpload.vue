@@ -100,6 +100,7 @@ onMounted(fetchProduct);
         </div>
     </div>
 </template>
+
 <style scoped>
 .product-media-page {
     min-height: calc(100vh - 90px);

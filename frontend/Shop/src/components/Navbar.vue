@@ -27,9 +27,9 @@ function startPage(){
 </script>
 
 <template>
-    <nav class="navbar navbar-dark bg-dark">
+    <nav id="main-navbar" class="navbar navbar-dark">
         <div class="container">
-            <img src="../../public/brand.png" @click="startPage" class="logo" />
+            <img src="/brand.png" @click="startPage" class="logo" />
 
             <div>
                 <router-link v-if="!admin && !user" to="/login" class="login-link">
@@ -66,11 +66,16 @@ function startPage(){
     box-sizing: border-box;
 }
 
+#main-navbar {
+    background-color: #0F172A;
+}
+
 .logo {
     height: 80px;
     width: auto;
+    cursor: pointer;
+    filter: brightness(0) invert(1); 
 }
-
 .login-link, .logout-button {
     color: white;
     text-decoration: none;

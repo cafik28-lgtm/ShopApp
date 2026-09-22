@@ -148,27 +148,39 @@ onMounted(fetchCategories);
 
 <style scoped>
 .create-product-page {
+    --bg-main: #FFFFFF;
+    --text-main: #1F2937;
+    --accent-primary: #10B981;
+    --accent-hover: #059669;
+    --accent-danger: #EF4444;
+    --border-light: #E5E7EB;
+
     min-height: calc(100vh - 90px);
-    padding: 30px;
-    background: #f5f5f5;
+    padding: 40px;
+    background: var(--bg-main);
     box-sizing: border-box;
+    font-family: 'Inter', 'Montserrat', sans-serif;
 }
 
 .product-form {
     width: 100%;
     max-width: 700px;
     margin: 0 auto;
-    padding: 35px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    background: #FFFFFF;
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
     box-sizing: border-box;
 }
 
 .product-form h1 {
     margin: 0 0 30px;
     text-align: center;
-    color: #212529;
+    color: var(--text-main);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 .input-row {
@@ -183,19 +195,33 @@ onMounted(fetchCategories);
 
 .input-group label {
     display: block;
-    margin-bottom: 7px;
-    color: #555;
+    margin-bottom: 8px;
+    color: var(--text-main);
+    font-weight: 500;
+    font-size: 14px;
 }
 
 .input-group input,
 .input-group textarea,
 .input-group select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
     box-sizing: border-box;
     font-size: 15px;
+    color: var(--text-main);
+    background-color: #F9FAFB;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.input-group input:focus,
+.input-group textarea:focus,
+.input-group select:focus {
+    border-color: var(--accent-primary);
+    background-color: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
 }
 
 .input-group textarea {
@@ -210,39 +236,51 @@ onMounted(fetchCategories);
 .checkbox-group {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 25px;
 }
 
 .checkbox-group input {
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
     cursor: pointer;
+    accent-color: var(--accent-primary);
 }
 
 .checkbox-group label {
     cursor: pointer;
+    color: var(--text-main);
+    font-size: 15px;
+    user-select: none;
 }
 
 .create-button {
     width: 100%;
-    padding: 11px;
+    padding: 14px;
     border: none;
-    border-radius: 8px;
-    background: #212529;
+    border-radius: 10px;
+    background: var(--accent-primary);
     color: white;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .create-button:hover {
-    background: #343a40;
+    background: var(--accent-hover);
+}
+
+.create-button:active {
+    transform: scale(0.99);
 }
 
 .error {
     margin-bottom: 15px;
     text-align: center;
-    color: #dc3545;
+    color: var(--accent-danger);
+    font-size: 14px;
+    font-weight: 500;
 }
 
 @media (max-width: 650px) {

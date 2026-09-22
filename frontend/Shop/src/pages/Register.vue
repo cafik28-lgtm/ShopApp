@@ -60,29 +60,43 @@ async function handleRegister() {
 
 <style scoped>
 .auth-container {
+    --bg-main: #FFFFFF;
+    --text-main: #1F2937;
+    --text-muted: #6B7280;
+    --accent-primary: #10B981;
+    --accent-hover: #059669;
+    --accent-danger: #EF4444;
+    --border-light: #E5E7EB;
+
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 90px);
-    background: #f5f5f5;
+    background: var(--bg-main);
+    font-family: 'Inter', 'Montserrat', sans-serif;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .auth-card {
-    background: white;
+    background: #FFFFFF;
     padding: 40px;
-    border-radius: 18px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     box-sizing: border-box;
 }
 
 .auth-card h2 {
     margin-top: 0;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
     text-align: center;
-    font-size: 32px;
-    color: #212529;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
 }
 
 .auth-form {
@@ -98,38 +112,46 @@ async function handleRegister() {
 }
 
 .form-group label {
-    font-size: 15px;
-    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
 }
 
 .form-input {
-    padding: 12px 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
     font-size: 15px;
-    background: #fafafa;
+    background: #F9FAFB;
+    color: var(--text-main);
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .form-input:focus {
-    border-color: #212529;
+    border-color: var(--accent-primary);
+    background: #FFFFFF;
 }
 
 .auth-button {
     margin-top: 10px;
-    padding: 12px;
-    background: #212529;
+    padding: 14px;
+    background: var(--accent-primary);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s ease, transform 0.1s ease;
 }
 
 .auth-button:hover {
-    background: #343a40;
+    background: var(--accent-hover);
+}
+
+.auth-button:active {
+    transform: scale(0.99);
 }
 
 .auth-links {
@@ -139,19 +161,27 @@ async function handleRegister() {
 }
 
 .link {
-    color: #212529;
+    color: var(--text-muted);
     text-decoration: none;
     font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
 }
 
 .link:hover {
+    color: var(--text-main);
     text-decoration: underline;
 }
 
 .error {
-    color: #dc3545;
-    margin-bottom: 15px;
+    color: var(--accent-danger);
+    background: #FEF2F2;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #FCA5A5;
+    margin-bottom: 20px;
     text-align: center;
     font-size: 14px;
+    font-weight: 500;
 }
 </style>

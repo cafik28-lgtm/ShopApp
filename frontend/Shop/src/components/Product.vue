@@ -6,6 +6,7 @@ import { getUser } from '../services/user_api';
 import { getCategorie } from '../services/category_api';
 import { getProductFeedbacks, createFeedback, deleteFeedback } from '../services/feedback_api';
 import { getFavorites, addFavorites, deleteFavorite } from '../services/favorites_api';
+import { addToCart } from '../services/cart_api';
 
 import notLiked from '../assets/favorites/notliked.png';
 import liked from '../assets/favorites/liked.png';
@@ -148,7 +149,6 @@ async function checkFavorite() {
     }
 }
 
-
 async function clickFavorite() {
     if(!currentUser) return;
 
@@ -169,6 +169,31 @@ async function clickFavorite() {
         }
     } catch(err){
         console.error('Favorite error');
+    }
+}
+
+async function handleAddToCart() {
+    if (!currentUser) {
+        router.push('/login');
+        return;
+    }
+    
+    if (!product.value || !product.value.in_stock) {
+        alert('Цього товару немає в наявності.');
+        return;
+    }
+
+    try {
+        const response = await addToCart(Number(productId), 1);
+        if (response.ok) {
+            alert('Товар додано до кошика!');
+        } else {
+            const data = await response.json();
+            alert(data.detail || 'Помилка додавання до кошика');
+        }
+    } catch (err) {
+        console.error('Error adding to cart', err);
+        alert('Помилка з\'єднання');
     }
 }
 
@@ -258,8 +283,9 @@ onMounted(() => {
                         class="buy-button"
                         :class="product.in_stock ? 'available' : 'unavailable'"
                         :disabled="!product.in_stock"
+                        @click="handleAddToCart"
                         >
-                            Buy
+                            {{ product.in_stock ? '🛒 Додати в кошик' : 'Немає в наявності' }}
                         </button>
 
                         <!-- Владелец или Админ -->
@@ -344,10 +370,20 @@ onMounted(() => {
 
 <style scoped>
 .product-page {
+    --bg-main: #FFFFFF;
+    --text-main: #1F2937;
+    --text-muted: #6B7280;
+    --accent-primary: #10B981;
+    --accent-hover: #059669;
+    --accent-danger: #EF4444;
+    --accent-warning: #F59E0B;
+    --border-light: #E5E7EB;
+
     min-height: calc(100vh - 90px);
     padding: 40px;
-    background: #f5f5f5;
+    background: var(--bg-main);
     box-sizing: border-box;
+    font-family: 'Inter', 'Montserrat', sans-serif;
 }
 
 .product-container {
@@ -364,17 +400,19 @@ onMounted(() => {
     grid-template-columns: 1fr 1fr;
     gap: 50px;
     padding: 40px;
-    background: white;
-    border-radius: 18px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+    background: #FFFFFF;
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
     box-sizing: border-box;
 }
 
 .product-image {
     height: 450px;
-    background: #eee;
+    background: #F9FAFB;
     border-radius: 15px;
     overflow: hidden;
+    position: relative;
 }
 
 .product-image img {
@@ -389,7 +427,8 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #777;
+    color: var(--text-muted);
+    font-size: 14px;
 }
 
 .product-info {
@@ -400,8 +439,10 @@ onMounted(() => {
 
 .product-info h1 {
     margin: 0 0 15px;
-    font-size: 36px;
-    color: #212529;
+    font-size: 32px;
+    color: var(--text-main);
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
 .product-rating {
@@ -409,99 +450,128 @@ onMounted(() => {
     align-items: center;
     gap: 8px;
     margin-bottom: 15px;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .stars {
     font-weight: 600;
-    color: #212529;
+    color: var(--accent-warning);
 }
 
 .reviews-count {
-    color: #777;
+    color: var(--text-muted);
 }
 
 .no-reviews {
-    color: #999;
+    color: var(--text-muted);
     font-style: italic;
     margin-bottom: 15px;
 }
 
 .description {
     margin-bottom: 20px;
-    font-size: 17px;
-    line-height: 1.5;
-    color: #555;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-muted);
 }
 
 .amount {
     margin: 5px 0;
-    font-size: 16px;
+    font-size: 15px;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.category {
+    margin-top: 10px;
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+.category-name {
+    font-weight: 600;
+    color: var(--text-main);
 }
 
 .buy-button {
     margin-top: 25px;
-    padding: 13px 25px;
+    padding: 14px 25px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     color: white;
-    font-size: 17px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s;
 }
 
 .buy-button.available {
-    background: #212529;
+    background: var(--accent-primary);
+}
+
+.buy-button.available:hover {
+    background: var(--accent-hover);
 }
 
 .buy-button.unavailable {
-    background: #dc3545;
+    background: var(--accent-danger);
     cursor: not-allowed;
 }
 
 .error {
-    color: #dc3545;
+    color: var(--accent-danger);
+    background: #FEF2F2;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #FCA5A5;
     text-align: center;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
 }
 
 .seller-link {
     display: inline-block;
     margin-top: 20px;
     padding: 10px 16px;
-    border-radius: 8px;
-    background: #f1f1f1;
-    color: #212529;
+    border-radius: 10px;
+    background: #F9FAFB;
+    border: 1px solid var(--border-light);
+    color: var(--text-main);
     text-decoration: none;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
-    transition: 0.2s;
+    transition: all 0.2s;
 }
 
 .seller-link:hover {
-    transform: translateY(-2px);
+    background: var(--border-light);
+    transform: translateY(-1px);
 }
 
-.bottom-div{
+.bottom-div {
     display: flex;
     flex-direction: column;
-    margin-top: 40px;
+    margin-top: 25px;
 }
 
-.choice-div{
+.choice-div {
     display: flex;
 }
 
-/* Стили для блока отзывов */
 .feedbacks-section {
-    background: white;
+    background: #FFFFFF;
     padding: 40px;
-    border-radius: 18px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
 }
 
 .feedbacks-section h2 {
     margin-top: 0;
-    margin-bottom: 20px;
-    color: #212529;
+    margin-bottom: 25px;
+    color: var(--text-main);
+    font-size: 24px;
+    font-weight: 700;
 }
 
 .feedbacks-list {
@@ -512,10 +582,10 @@ onMounted(() => {
 }
 
 .feedback-item {
-    padding: 15px;
-    background: #fafafa;
-    border: 1px solid #eee;
-    border-radius: 10px;
+    padding: 20px;
+    background: #F9FAFB;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -525,66 +595,105 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     font-size: 14px;
-    color: #666;
+    color: var(--text-muted);
+}
+
+.rating {
+    font-weight: 600;
+    color: var(--accent-warning);
 }
 
 .feedback-text {
     margin: 0;
-    color: #333;
+    color: var(--text-main);
+    font-size: 15px;
 }
 
 .delete-feedback-btn {
     align-self: flex-start;
-    padding: 5px 10px;
-    background: #dc3545;
+    padding: 6px 12px;
+    background: var(--accent-danger);
     color: white;
     border: none;
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.delete-feedback-btn:hover {
+    background: #DC2626;
 }
 
 .no-feedbacks {
-    color: #777;
-    margin-bottom: 20px;
+    color: var(--text-muted);
+    margin-bottom: 25px;
+    font-style: italic;
 }
 
 .feedback-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    border-top: 1px solid #eee;
-    padding-top: 20px;
+    border-top: 1px solid var(--border-light);
+    padding-top: 30px;
+}
+
+.feedback-form h3 {
+    margin: 0 0 5px 0;
+    color: var(--text-main);
+    font-size: 20px;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
 }
 
 .form-select, .form-textarea {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
     font-size: 15px;
-    background: #fafafa;
+    background: #F9FAFB;
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-select:focus, .form-textarea:focus {
+    border-color: var(--accent-primary);
+    background: #FFFFFF;
 }
 
 .form-textarea {
     resize: vertical;
-    min-height: 80px;
+    min-height: 100px;
 }
 
 .submit-feedback-btn {
-    padding: 10px 20px;
-    background: #212529;
+    padding: 12px 24px;
+    background: var(--text-main);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
     align-self: flex-start;
+    transition: background 0.2s;
+}
+
+.submit-feedback-btn:hover {
+    background: var(--accent-primary);
 }
 
 .title-row {
@@ -594,15 +703,27 @@ onMounted(() => {
 }
 
 .favorite-button {
-    border: none;
-    background: transparent;
+    border: 1px solid var(--border-light);
+    background: #FFFFFF;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
-    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+
+.favorite-button:hover {
+    transform: scale(1.08);
 }
 
 .favorite-button img {
-    width: 40px;
-    height: 40px;
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
 }
 
 @media (max-width: 700px) {
@@ -613,6 +734,14 @@ onMounted(() => {
 
     .product-image {
         height: 300px;
+    }
+
+    .product-page {
+        padding: 20px;
+    }
+
+    .feedbacks-section {
+        padding: 25px;
     }
 }
 </style>
